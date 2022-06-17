@@ -35,8 +35,8 @@ function init()
 						
 						// TODO: if host not production change relative urls to production endpoint
 						
-						if( !item.url.match(/http/) ){
-							item.url = item.url.replace(/.*videos/, "http://refapp.hbbtv.org/videos")
+						if( !item.url.match(/^https/) ){
+							item.url = item.url.replace(/.*videos/, "https://refapp.hbbtv.org/videos")
 						}
 						
 						submenuItems.push( item );
