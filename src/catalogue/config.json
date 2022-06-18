@@ -630,6 +630,20 @@
                     "img": "icons/icons_1x1_1080p.png",
                     "app": 6,
                     "desc": "only one audio track and other minnor tweaks"
+                },
+                {
+                    "title": "3rd Dash FMP4 DRTV-AVC-4.0 clear",
+                    "url": "https://drodtest01a.akamaized.net/all/clear/none/xx/dashtest2022/fmp4/manifest3.mpd",
+                    "img": "icons/icons_1x1_1080p.png",
+                    "app": 6,
+                    "desc": "two audio tracks (no mono) and other minnor tweaks"
+                },
+                {
+                    "title": "4th Dash FMP4 DRTV-AVC-4.0 clear",
+                    "url": "https://drodtest01a.akamaized.net/all/clear/none/xx/dashtest2022/fmp4/manifest4.mpd",
+                    "img": "icons/icons_1x1_1080p.png",
+                    "app": 6,
+                    "desc": "two audio tracks (no mono) , and minus other minnor tweaks"
                 }
             ]
         }
