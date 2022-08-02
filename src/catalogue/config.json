@@ -672,6 +672,20 @@
                     "img": "icons/icons_1x1_2160p.png",
                     "app": 6,
                     "desc": "as-is minus mono sound"
+                },
+                {
+                    "title": "bento clyc - Hbbtv 1.5",
+                    "url": "https://drodtest01a.akamaized.net/all/clear/none/xx/dvb_dashtest/02/hbb_dash_2.mpd",
+                    "img": "icons/icons_1x1_2160p.png",
+                    "app": 6,
+                    "desc": ""
+                },
+                {
+                    "title": "bento clyc - DVB-DASH",
+                    "url": "https://drodtest01a.akamaized.net/all/clear/none/xx/dvb_dashtest/03/dvb_dash.mpd",
+                    "img": "icons/icons_1x1_2160p.png",
+                    "app": 6,
+                    "desc": ""
                 }
             ]
         }
