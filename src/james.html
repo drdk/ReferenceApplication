@@ -1,0 +1,2170 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//HbbTV//1.1.1//EN" "http://www.hbbtv.org/dtd/HbbTV-1.1.1.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<title>Massive HbbTV - Video tests</title>
+	<meta http-equiv="content-type" content="application/vnd.hbbtv.xhtml+xml; charset=UTF-8" />
+    <script src="https://reference.dashif.org/dash.js/latest/dist/dash.all.debug.js"></script>
+	<style>
+	body {
+		margin: 0;
+		padding: 0;
+		font-family: tahoma, verdana, arial, sans-serif;
+		font-size: 16px;
+		background: #666666;
+	}
+
+	#application {
+		position: relative;
+		top: 0;
+		left: 0;
+		width: 1280px;
+		height: 720px;
+		overflow:hidden;
+	}
+
+h1 {
+	margin-top:0;
+}
+div.hr{
+	border-top:1px solid #999;
+	margin:20px 0;
+}
+li {
+	line-height: 1.5em;
+	margin-bottom: 1em;
+}
+li span {
+ font-size: 0.9em;
+ color:#555;
+ word-break:break-word;
+ word-wrap:break-word;
+}
+
+a{color:orange;}
+a:focus{background:blue;color:#fff;}
+
+#deviceInfo {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 700px;
+	background: #888;
+}
+#deviceInfo h2 {
+	margin-top: 0;
+}
+
+#playlistInfoContainer {
+	position: absolute;
+	top: 150px;
+	right: 0px;
+	width:700px;
+	visibility: hidden;
+	background: #aaa;
+}
+#playlistInfoContainer h2 {
+	margin-top: 0;
+}
+
+
+#playerInfoContainer {
+	position: absolute;
+	top: 450px;
+	right: 0px;
+	width:700px;
+	visibility: hidden;
+	background: #ddd;
+}
+#playerInfoContainer h2 {
+	margin-top: 0;
+}
+</style>
+
+<script type='text/javascript'>
+//<![CDATA[
+window.onerror = function(errorMsg, url, lineNumber) {
+	debug(errorMsg + " on file " + url + " at line: " + lineNumber);
+};
+
+var loopingPlaylists = true;
+var queueingPlaylists = false;
+var useSeekPlay	= false;
+var usePauseSeekPlay = true;
+var queuedVideoData = null;
+var debugDIV;
+var timerDelay = 0;
+var useDebugging = true;
+var useTracing = true;
+var useQuirksPlayer = true;
+
+
+var testMP4 = "https://archive.org/download/ElephantsDream/ed_1024_512kb.mp4";
+
+// Force ref app load
+// location.href = "https://refapp.hbbtv.org/production/catalogue/"
+
+function debug(message)
+{
+    // Disable debugging with the below return statement.
+	return;
+
+	if (message == null) return;
+	if (message == "") return;
+
+	if ( !debugDIV ) {
+			createDebugDIV();
+	}
+		
+	debugDIV.innerHTML = message + "<br />" + debugDIV.innerHTML;
+}
+
+
+function trace(message)
+{
+	return;
+
+	if (message == null) return;
+	if (message == "") return;
+
+	if (!useTracing)
+	{		
+		if (message.indexOf("FAIL") == -1) return;
+	}
+
+	if ( !debugDIV ) {
+			createDebugDIV();
+	}
+	
+	if (message.indexOf("FAIL") != -1)
+	{
+		message = "<span style='background-color:red;'>" + message + "</span>";
+	}
+	else
+	if (message.indexOf("REPORT") != -1)
+	{
+		message = "<span style='background-color:green;'>" + message + "</span>";
+	}
+	
+	
+	debugDIV.innerHTML = message + "<br />" + debugDIV.innerHTML;
+}
+
+function createDebugDIV() {
+	debugDIV = document.createElement("div");
+	debugDIV.id = "debugDIV";
+	debugDIV.style.background = "#fff";
+	debugDIV.style.color = "#222";
+	debugDIV.style.opacity = 0.7;
+	debugDIV.style.position = "absolute";
+	debugDIV.style.top = "10px";
+	debugDIV.style.left = "20px";
+	debugDIV.style.zIndex = 99999;
+
+	document.body.appendChild(debugDIV);
+}
+
+
+
+function getParameterByName(name) {
+
+	debug("location.search = " + location.search);
+
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+var videos = {
+   
+  
+};
+
+
+var playlists = {
+
+
+	"hbbtv_dash_dr_playlist": {
+		"title": "DR HBBTV:DASH",
+		"videos": [
+				
+			{
+                "mtype" : "application/dash+xml",
+				"source" : "https://drodtest01a.akamaized.net/all/clear/none/xx/dvb_dashtest/02/hbb_dash_2.mpd",
+				"startTime" : 0,
+				"endTime" : null,
+				"hasDrm": false,                
+			}						
+		]
+	},
+
+	"dvb_dash_dr_playlist": {
+		"title": "DR DVB:DASH",
+		"videos": [				
+			{                
+				"source" : "https://drodtest01a.akamaized.net/all/clear/none/xx/dvb_dashtest/01/dvb_dash.mpd",
+				"mtype" : "application/dash+xml",				
+				"startTime" : 0,
+				"endTime" : null,
+				"hasDrm": false,                
+			}						
+		]
+	},
+
+	"dvb_mpeg_dash_dr_playlist": {
+		"title": "DR DVB:DASH + MPEG:DASH",
+		"videos": [				
+			{                
+				"source" : "https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd",
+				"mtype" : "application/dash+xml",				
+				"startTime" : 0,
+				"endTime" : null,
+				"hasDrm": false,                
+			}						
+		]
+	},
+
+	"dvb_dash_dr_clearkey_playlist_video": {
+		"title": "DR DVB-DASH ClearKey HBBTV:DASH: + DVB:DASH + MPEG:DASH",
+		"videos": [
+			{
+				"mtype" : "application/dash+xml",
+				"source" : "https://refapp.hbbtv.org/videos/02_gran_dillama_1080p_25f75g6sv7/drm/manifest_clearkey.mpd",
+				"startTime" : 0,
+				"endTime" : null,
+				"hasDrm": false,
+                "hasProtection": true,
+                "useMSEEME": true,
+                "useVideo": true,
+                "lAUrl": "https://refapp.hbbtv.org/videos/laurl_ck.php?kid=43215678123412341234123412341236"
+			}, 
+		]
+	},
+
+    /*
+    "dvb_dash_dr_clearkey_playlist_OIPF": {
+		"title": "DR DVB-DASH ClearKey HBBTV:DASH: + DVB:DASH + MPEG:DASH (OIPF)",
+		"videos": [
+			{
+				"mtype" : "application/dash+xml",
+				"source" : "https://refapp.hbbtv.org/videos/02_gran_dillama_1080p_25f75g6sv7/drm/manifest_clearkey.mpd",
+				"startTime" : 0,
+				"endTime" : null,
+				"hasDrm": false,
+                "hasProtection": true,
+                "useMSEEME": true,
+                "useVideo": false,
+                "lAUrl": "https://refapp.hbbtv.org/videos/laurl_ck.php?kid=43215678123412341234123412341236"
+			}, 
+		]
+	},
+    */
+    
+
+    "dvb_dash_playready_playlist": {
+		"title": "DVB-DASH PlayReady DRM",
+		"videos": [
+					
+			{
+				"mtype" : "application/dash+xml",
+				"source" : "http://meridian.sofiadigital.fi/tvportal/referenceapp/videos/02_gran_dillama_1080p_25f75g6sv5/drm/manifest_playready.mpd",
+				"startTime" : 0,
+				"endTime" : null,
+				"hasDrm": true 
+			}
+						
+		]
+	},
+
+    /*
+    "dvb_dash_marlin_playlist": {
+		"title": "DVB-DASH Marlin DRM",
+		"videos": [					
+			{
+				"mtype" : "application/dash+xml",
+				"source" : "http://meridian.sofiadigital.fi/tvportal/referenceapp/videos/02_gran_dillama_1080p_25f75g6sv5/drm/manifest_marlin.mpd",
+				"startTime" : 0,
+				"endTime" : null,
+				"hasDrm": true 
+			}
+						
+		]
+	},
+    */
+    
+	"dash_playlist": {
+		"title": "MPEG-DASH Playlist",
+		"videos": [		
+			{
+				"mtype" : "application/dash+xml",
+				"source" : "http://itv.mit-xperts.com/video/dash/new.php/test.mpd",
+				"startTime" : 0,
+				"endTime" : 10 * 1000,
+				"hasDrm": true 
+			},
+		
+			{
+				"mtype" : "application/dash+xml",
+				"source" : "http://yt-dash-mse-test.commondatastorage.googleapis.com/media/oops-20120802-manifest.mpd",
+				"startTime" : 0,
+				"endTime" : 10 * 1000,
+				"hasDrm": true 
+			}						
+		]
+	},
+	
+
+	"hls_playlist": {
+		"title": "HLS",
+		"videos": [	
+				
+			{
+				"mtype" : "application/vnd.apple.mpegurl",
+				"source" : "https://cdn-1.metacdn.net/vtnwmijm/7jDHz0a/tearsofsteel_4k_mov-MASTER_PLAYLIST_1522121804554.m3u8",
+				"startTime" : 0,
+				"endTime" : null,
+				"hasDrm": false 
+			}
+
+		]
+	},
+
+    "hls_playlist2": {
+		"title": "HLS (Alternate Mimetype)",
+		"videos": [	
+				
+			{
+				"mtype" : "application/x-mpegURL",
+				"source" : "https://cdn-1.metacdn.net/vtnwmijm/7jDHz0a/tearsofsteel_4k_mov-MASTER_PLAYLIST_1522121804554.m3u8",
+				"startTime" : 0,
+				"endTime" : null,
+				"hasDrm": false 
+			}
+
+		]
+	},
+
+
+	"live_hls_playlist": {
+		"title": "Live HLS",
+		"videos": [
+	
+			{
+				"mtype" : "application/vnd.apple.mpegurl",
+				"source" : "https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8",				
+				"startTime" : null,
+				"endTime" : null,
+				"hasDrm": false 
+			}
+			
+		]
+	},	
+
+    "live_hls_playlist2": {
+		"title": "Live HLS (Alternate Mimetype)",
+		"videos": [
+	
+			{
+				"mtype" : "application/x-mpegURL",
+				"source" : "https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8",				
+				"startTime" : null,
+				"endTime" : null,
+				"hasDrm": false 
+			}
+			
+		]
+	},	
+	
+	"live_dash_playlist": {
+		"title": "Live DASH",
+		"videos": [
+		
+			{
+				"mtype" : "application/dash+xml",
+				"source" : "https://livesim.dashif.org/livesim/scte35_2/testpic_2s/Manifest.mpd",				
+				"startTime" : null,
+				"endTime" : null,
+				"hasDrm": false 
+			}			
+		]
+	},	
+	
+	
+};
+//]]>
+</script>
+</head>
+
+<body>
+
+<object id="appmgr" type="application/oipfApplicationManager" style="position:absolute; left:0px; top:0px; width:0px; height:0px;"></object>
+<object id="oipfcfg" type="application/oipfConfiguration" style="position:absolute; left:0px; top:0px; width:0px; height:0px;"></object>
+
+<div id="application">
+
+	<h1>Massive HbbTV - Video Tests - V4</h1>
+
+	<ul id="vidlist"></ul>
+
+	<br />
+	<h2 style='background-color:green;'>Current Test: Please Choose One</h2>
+	<div id="vidcontainer"></div>
+
+	<div id="deviceInfo">
+		<h2>Device Info</h2>
+	</div>
+		
+	<div id="playlistInfoContainer">
+		<h2>Current Playlist Info</h2>
+		<div id="playlistInfo"></div>
+	</div>
+	
+	<div id="playerInfoContainer">		
+		<div id="playerInfo"></div>
+	</div>
+</div>
+<script type="text/javascript">
+//<![CDATA[
+var HBBTV = navigator.userAgent.toLowerCase().indexOf("hbbtv") >= 0;
+
+var VK_RED = 82; // r on keyboard
+var VK_GREEN = 71; // g on keyboard
+var VK_BLUE = 66; // b on keyboard
+var VK_YELLOW = 89; // y on keyboard
+
+var VK_UP = 38; // up on keyboard
+var VK_DOWN = 40; // down on keyboard
+var VK_LEFT = 37; // down on keyboard
+var VK_RIGHT = 39; // down on keyboard?
+var VK_ENTER = 13; // enter on keyboard
+var VK_BACK = 8; // back on keyboard
+var VK_PLAY = 80; // p on keyboard
+var VK_PAUSE = 32; // space on keyboard
+var VK_STOP = 83; // s on keyboard
+if (typeof(KeyEvent)!='undefined') {
+	if (typeof(KeyEvent.VK_RED)!='undefined') {
+		VK_RED = KeyEvent.VK_RED;
+		VK_BLUE = KeyEvent.VK_BLUE;
+		VK_YELLOW = KeyEvent.VK_YELLOW;
+		VK_GREEN = KeyEvent.VK_GREEN;
+		VK_UP = KeyEvent.VK_UP;
+		VK_LEFT = KeyEvent.VK_LEFT;
+		VK_RIGHT = KeyEvent.VK_RIGHT;
+		VK_DOWN = KeyEvent.VK_DOWN;
+		VK_ENTER = KeyEvent.VK_ENTER;
+		VK_BACK = KeyEvent.VK_BACK;
+		VK_PLAY = KeyEvent.VK_PLAY;
+		VK_PAUSE = KeyEvent.VK_PAUSE;
+		VK_STOP = KeyEvent.VK_STOP;
+	}
+}
+
+var POSITION_START = 0;
+var POSITION_CURRENT = 1;
+var POSITION_END = 2;
+
+var vid = null,
+	videoData = null,
+	playlistData = null,
+	currentPlaylistIndex = 0,
+	Application = Application || {};
+
+var Broadcast = Broadcast || {};	
+	
+function initApp() {
+  try {
+    Application = document.getElementById('appmgr').getOwnerApplication(document);
+    Application.show();
+  } catch (e) {
+    // ignore
+  }
+  setKeyset(0x1+0x2+0x4+0x8+0x10+0x20);
+}
+
+function setKeyset(mask) {
+  try {
+    Application.privateData.keyset.setValue(mask);
+  } catch (e) {}
+}
+
+function setUsePauseSeekPlay(enabled)
+{
+	usePauseSeekPlay = enabled;
+	updateBackground();
+}
+
+function setUseDebugging(enabled)
+{
+	useDebugging = enabled;
+	updateBackground();
+}
+
+
+function setImmediateSeekPlay(enabled)
+{
+	useSeekPlay = enabled;
+	updateBackground();
+}
+
+function setQueueingPlaylists(enabled)
+{
+	queueingPlaylists = enabled;	
+	queuedVideoData = null;
+	updateBackground();
+}
+
+function updateBackground()
+{
+	var color = "#";	
+
+	if (!usePauseSeekPlay)
+	{
+		color += "ff";
+	}
+	else
+	{
+		color += "66";
+	}
+	
+	if (useSeekPlay)
+	{
+		color += "ff";
+	}
+	else
+	{
+		color += "66";
+	}
+	
+	/*
+	if (queueingPlaylists)
+	{
+		color += "ff";
+	}
+	else
+	{
+		color += "66";
+	}
+	*/
+	
+	if (useDebugging)
+	{
+		color += "ff";
+	}
+	else
+	{
+		color += "66";
+	}	
+	document.body.style.background = color;
+	
+
+}
+
+
+function handleKeyCode(kc) 
+{
+
+	debug("handleKeyCode " + kc);
+
+	if (kc==VK_BLUE) 
+	{
+		//setQueueingPlaylists(!queueingPlaylists)
+		setUseDebugging(!useDebugging);
+		return true;
+	} 
+	else
+	if (kc==VK_RED) 
+	{
+		setUsePauseSeekPlay(!usePauseSeekPlay);		
+		return true;
+	} 
+	else
+	if (kc==VK_YELLOW) 
+	{
+		debugDIV.innerHTML = "";
+		return true;
+	} 	
+	else 
+	if (kc==VK_GREEN) 
+	{
+		setImmediateSeekPlay(!useSeekPlay);
+		return true;
+	} 
+	else if (kc==VK_DOWN && links.length>0) 
+	{
+		if(currentFocus == links.length - 1) 
+		{
+			currentFocus = 0;
+		}
+		else {
+			currentFocus++;
+		}
+
+		links[currentFocus].focus();
+		return true;
+	} 
+	else if (kc==VK_UP && links.length>0) {
+		if(currentFocus == 0) {
+			currentFocus = links.length - 1;
+		}
+		else {
+			currentFocus--;
+		}
+
+		links[currentFocus].focus();
+		return true;
+	} 
+	else if (kc==VK_LEFT) 
+	{
+		debug("SEEK LEFT");
+		playResult = vid.play(0);
+		//seekResult = vid.seek(0,POSITION_START);
+		seekResult = vid.seek(0);
+		playResult = vid.play(1);
+		return true;
+	} 
+	else if (kc==VK_RIGHT) 
+	{
+		debug("SEEK RIGHT");
+		playResult = vid.play(0);
+		//seekResult = vid.seek(vid.playTime,POSITION_START);
+		seekResult = vid.seek(vid.playTime);
+		playResult = vid.play(1);
+		return true;
+	} 		
+	else if (kc==VK_PLAY) 
+	{
+		playPesult = vid.play(1);
+		return true;
+	} 
+	else if (kc==VK_PAUSE) 
+	{
+		playresult = vid.play(0);
+		return true;
+	} 
+	else if (kc==VK_STOP) 
+	{
+		stopResult = vid.stop();
+		return true;
+	} 
+	else if (kc==VK_BACK) 
+	{
+		document.location = document.location.pathname;
+		return true;
+	}
+	else if (kc==VK_ENTER) 
+	{
+		debug("ENTER");
+		debug(navigationTarget);		
+		// Application.createApplication(navigationTarget,false);
+		location.href = navigationTarget
+		return false;
+	}
+	return false;
+}
+
+function registerKeyEventListener() {
+  document.addEventListener("keydown", function(e) {
+    if (handleKeyCode(e.keyCode))
+      e.preventDefault();
+  }, false);
+}
+
+var playStateMap = [
+	"stopped",
+	"playing",
+	"paused",
+	"connecting",
+	"buffering",
+	"finished",
+	"error",
+	
+];
+
+function getPlayState(playState) {
+	if (playStateMap[playState]){
+		return playState + ' ('+playStateMap[playState]+')';
+	}else{
+		return playState + ' (unknown)';
+	}
+}
+
+function getPlayStateSimple(playState) {
+	if (playStateMap[playState]){
+		return playStateMap[playState];
+	}else{
+		return 'unknown';
+	}
+}
+
+var errorStateMap = [
+	"A/V format not supported.",
+	"cannot connect to server or connection lost.",
+	"unidentified error.",
+	"insufficient resources.",
+	"content corrupt or invalid.",
+	"content not available.",
+	"content not available at given position"
+];
+
+function getErrorState(errorState) {
+	if (errorState == -1)
+	{
+		return 'no error?';
+	}
+	else
+	if (errorStateMap[errorState]){
+		return errorState + ' ('+errorStateMap[errorState]+')';
+	}else{
+		return errorState;
+	}
+}
+
+
+function colorWrap(flag)
+{
+	if (flag == true)
+	{
+		return "<span style='background-color:green;'>" + flag + "</span>";
+	}
+	else
+	if (flag == false)
+	{
+		return "<span style='background-color:red;'>" + flag + "</span>";
+	}
+	else	
+	if (flag + '' == 'undefined')
+	{
+		return "<span style='background-color:orange;'>" + flag + "</span>";
+	}
+	else		
+	{
+		return flag;
+	}
+	
+}
+
+function updatePlayerInfo() {
+	var playerInfo = document.getElementById("playerInfo");
+
+	try{
+		var html = "";
+	
+		if (vid != null)
+		{
+	
+			html += "<small>";
+			
+			var mode = "";
+			
+			if (useSeekPlay)
+			{
+				mode = "SEEKPLAY";
+			}
+			else		
+			{
+				if (usePauseSeekPlay)
+				{
+					mode = "PAUSESEEKPLAY";
+				}
+				else
+				{
+					mode = "PLAYSEEKPLAY";
+				}
+			}
+			
+			html += "QUEUING " + (queueingPlaylists?"ENABLED":"DISABLED") + " | SEEKMODE " + mode +"<br />";
+
+            if (videoData.useVideo === true) {
+			    html += 'URL = '+vid.src+'<br />';
+            } else {
+                html += 'URL = '+vid.data+'<br />';
+            }
+
+			//playerInfo.innerHTML += 'URL = '+videoData.source+'<br />';
+			html += 'Schedule:  START:' + videoData.startTime + " END:" + videoData.endTime +'<br />';
+			html += 'type = '+vid.type+'<br />';
+			html += 'play state (from video) = ' + getPlayState(vid.playState) + '<br />';
+			//playerInfo.innerHTML += 'play state (from event) = ' + getPlayState(playStateFromEvent) + '<br />';			
+			
+			html += 'last play result ' + colorWrap(playResult) + ' | ';
+			html += 'last seek result ' + colorWrap(seekResult) + ' | ';
+			html += 'last stop result ' + colorWrap(stopResult) + ' | ';
+			html += 'last queue result ' + colorWrap(queueResult) + '<br />';		
+			html += 'play position = '+vid.playPosition+'<br />';
+			html += 'play time = '+vid.playTime+'<br />';
+			html += "</small>";
+			
+			if (vid.error)
+			{
+				html += "<span style='background-color:red;'>";
+				html += 'error = '+getErrorState(vid.error);
+				html += "</span>";
+				html += '<br />';			
+			}
+		}
+			
+		playerInfo.innerHTML = html;
+			
+	}catch(e){
+		debug("ERROR: updatePlayerInfo: " + e);
+	}
+}
+
+function updatePlaylistInfo() {
+	var playlistInfo = document.getElementById("playlistInfo");
+
+	try{	
+		if (playlistData == null) return;	
+		if (playlistData.videos == null) return;
+		var html = "<small>";
+		var i;		
+		
+		for(i = 0;i< playlistData.videos.length;i++)
+		{
+			var videoDataLocal = playlistData.videos[i];			
+			html += (videoDataLocal.hasDrm ? "<i>" : "");			
+			html += (currentPlaylistIndex == i ? "<u style='background-color:green;'>" : "");
+			html += videoDataLocal.source + (currentPlaylistIndex == i ? "</u>" : "");
+			html += (videoDataLocal.hasDrm ? "</i >" : "");			
+			html += " <small>(" + videoDataLocal.mtype + ")</small> ";  
+			html += (videoDataLocal.hasDrm ? " (DRM)" : "");	
+			html += (currentPlaylistIndex == i ? " PLAYING" : "");			
+			// +  (queuedVideoData!=null && queuedVideoData.source ==  videoDataLocal.source? " <i>NEXT</i>":"")   
+			// +  (vid != null && videoDataLocal.source ==  vid.data ? " <i>PLAYING</i>":"")
+			
+			html +=  "<br />";			
+		}
+		
+		html += "</small>";
+		playlistInfo.innerHTML = html;
+		
+	}catch(e){
+		debug("ERROR: updatePlaylistInfo: " + e);
+	}
+}
+
+var appEL = document.getElementById("application");
+var currentFocus = 0;
+var links;
+var navigationTarget = null
+function addNavigation() {
+	currentFocus = 0;
+	links = document.getElementsByTagName("a");
+	for (var i=0;i<links.length;i++) {
+		var link = links[i];
+		if (typeof link.addEventListener == "function") {
+			link.addEventListener("focus", function(e){
+				var appHeight = 720;
+				var viewBottom = appEL.scrollTop + appHeight;
+				var target = e.target;
+				var parent = target.parentElement;
+				if (viewBottom < (parent.offsetTop + parent.clientHeight))
+				{
+					appEL.scrollTop = (parent.offsetTop-appHeight/2);
+				}
+				navigationTarget = e.target.href
+				//debug("navigationTarget")
+				//debug(navigationTarget)
+				// debug(JSON.stringify(navigationTarget))
+			}, false);
+			link.addEventListener("click", function(e){
+				try{
+					Application.createApplication(e.target.href,false);
+					e.stopPropagation();
+					e.preventDefault();
+					return false;
+				}catch(e){}
+			}, true);			
+		}
+	}
+	links[currentFocus].focus();
+}
+
+
+function createNewVideoObject() {
+
+
+	/*
+	var oldVid = document.getElementById('video');
+	
+	if (oldVid)
+	{
+		oldVid.stop();
+		document.getElementById("vidcontainer").removeChild(oldVid);		
+	}*/
+
+	var html = '<object id="video" type="'+videoData.mtype+'" style="position: absolute; left: 10px; bottom: 10px; width: 416px; height: 234px;"><'+'/object>';
+	/// var html = '<object id="video" type="'+videoData.mtype+'" style="position: absolute; left: 0px; bottom: 0px; width: 1280px; height: 720px;"><'+'/object>';
+	
+    if (videoData.useVideo === true) {
+        html = '<video id="video" style="position: absolute; left: 10px; bottom: 10px; width: 416px; height: 234px; background-color: black;"><'+'/video>';
+    }
+
+	
+	document.getElementById("vidcontainer").innerHTML = html;
+
+	vid = document.getElementById('video');
+
+    if (videoData.useVideo === true) {
+
+        vid.autoplay = true;
+
+        vid.addEventListener('loadedmetadata', function() {
+            debug('PLAYING')
+        });
+		vid.addEventListener('playing', function() {
+
+                debug('PLAYING')
+            			
+        });
+		vid.addEventListener('pause', function() {
+            debug('PAUSED')
+        });
+		vid.addEventListener('ended', function() {
+            debug('ENDED')
+        });
+		vid.addEventListener('error', function() {
+            debug('ERROR')
+        });
+		vid.addEventListener('timeupdate', function() {
+            // debug('TIME')            
+        });
+		vid.addEventListener('seeking', function() {
+            debug('SEEKING')
+        });
+		vid.addEventListener('seeked', function() {
+            debug('SEEKED')
+        });
+		vid.addEventListener('waiting', function() {
+            debug('WAITING')
+        });
+		vid.addEventListener('canplay', function() {
+            debug('CANPLAY')
+        });
+		vid.addEventListener('onreadystate', function() {
+            debug('READY')
+        });
+    } else {
+        vid.onPlayStateChange = playStateChanged;
+    }
+
+	//<object id="broadcast" type="video/broadcast" style="position:absolute; left:0px; top:0px;"></object>
+	if (videoData.mtype != "video/broadcast")
+	{
+        if (videoData.useVideo !== true) {
+            vid.data = videoData.source;
+            vid.type = videoData.mtype;
+        }		
+	}
+	else
+	{
+		debug("NO DATA")
+		
+		Broadcast = document.getElementById("video");
+		try { Broadcast.bindToCurrentChannel(); } catch (e) { debug(e);}
+		try { Broadcast.setFullScreen(true); } catch (e) {debug(e);}
+		
+	}
+	
+	document.getElementById("playerInfoContainer").style.visibility = "visible";
+	document.getElementById("playlistInfoContainer").style.visibility = "visible";	
+		
+	debug("videoData.source    = " + videoData.source);
+	debug("videoData.startTime = " + videoData.startTime);
+	debug("videoData.endTime   = " + videoData.endTime);
+
+
+    if (videoData.useMSEEME === true)
+    {
+        debug("Activate ClearKey " + videoData.lAUrl)           
+        var player = dashjs.MediaPlayer().create();
+        player.initialize(vid, videoData.source, true);            
+        if (videoData.hasProtection === true) {    
+            player.setProtectionData({
+                    "org.w3.clearkey": { 
+                        "serverURL": videoData.lAUrl                        
+                    }
+            });     
+        }                            
+    }
+		
+	//
+	// We can't write to the video object until it has had a chance to finalise its initialisation into the DOM
+	// so we exit and wait for the browser to fire our timer.
+	//
+	
+	
+	if (quirksPlayer == null)
+	{
+		var interval = setInterval(function(){
+			clearInterval(interval);
+			debug("START")
+			startVideo();
+		},timerDelay);
+	}
+	else
+	{
+		trace('QUIRKS PLAYER WILL START VIDEO');
+	}
+	
+	
+}
+
+
+
+
+function startVideo() {
+	// start playing
+
+    debug('start video')
+	
+	if (videoData.startTime > 0) 
+	{				
+		if (useSeekPlay)
+		{
+			var interval = setInterval(function(){
+				clearInterval(interval);					
+				
+				debug("TRY SEEK (SEEK PLAY) to " + videoData.startTime);	
+				//seekResult = vid.seek(videoData.startTime, POSITION_START);
+				seekResult = vid.seek(videoData.startTime);
+				if (!seekResult)
+				{
+					debug("SEEK (SEEK PLAY) FAIL");
+				}		
+				
+				var intervalInner = setInterval(function(){
+					clearInterval(intervalInner);					
+					debug("TRY PLAY (SEEK PLAY)");	
+					playResult = vid.play(1);		
+					if (!playResult)
+					{
+						debug("PLAY (SEEK PLAY) FAIL");	
+					}
+				},timerDelay);
+			},timerDelay);
+		}
+		else
+		{
+			if (!usePauseSeekPlay)
+			{		
+			
+				debug("WAIT 'playing' (PLAY SEEK)");
+				addOnPlaying(function(){						
+					debug("'playing' => TRY SEEK (PLAY SEEK) to " + videoData.startTime);
+					//seekResult = vid.seek(videoData.startTime, POSITION_START);
+					seekResult = vid.seek(videoData.startTime);
+					if (!seekResult)
+					{
+						debug("SEEK (PAUSE SEEK PLAY) FAIL");
+					}			
+				});
+				
+				
+				var intervalInner = setInterval(function(){
+					clearInterval(intervalInner);					
+					
+					debug("TRY PLAY (PLAY SEEK)");
+					playResult = vid.play(1);		
+					if (!playResult)
+					{
+						debug("PLAY (PLAY SEEK) FAIL");
+					}
+					
+				},timerDelay);				
+			}
+			else
+			{
+				debug("WAIT 'paused' (PAUSE SEEK PLAY)");				
+				addOnPaused(function(){						
+					debug("'paused' => TRY SEEK (PAUSE SEEK PLAY) to " + videoData.startTime);
+					//seekResult = vid.seek(videoData.startTime, POSITION_START);
+					seekResult = vid.seek(videoData.startTime);
+					if (!seekResult)
+					{
+						debug("SEEK (PAUSE SEEK PLAY) FAIL");
+					}	
+					
+					var interval = setInterval(function(){
+						clearInterval(interval);					
+						debug("TRY PLAY (PAUSE SEEK PLAY)");	
+						playResult = vid.play(1);		
+						if (!playResult)
+						{
+							debug("PLAY (PAUSE SEEK PLAY) FAIL");	
+						}
+					},timerDelay);
+				});
+
+				var intervalInner = setInterval(function(){
+					clearInterval(intervalInner);					
+					
+					debug("TRY PAUSE (PAUSE SEEK PLAY)");
+					playResult = vid.play(0);		
+					if (!playResult)
+					{
+						debug("PAUSE (PAUSE SEEK PLAY) FAIL");
+					}
+					
+				},timerDelay);					
+			}
+		}
+		
+	}
+	else	
+	{
+		debug("PLAY (no seek required)")
+		playResult = vid.play(1);				
+	}
+}
+
+
+// The playstate from the last call to playStateChanged which is wired up to onPlayStateChange
+var playStateFromEvent = -1;
+var seekResult = "N/A";
+var playResult = "N/A";
+var queueResult = "N/A";
+var stopResult = "N/A";
+
+
+var onPaused = [];
+function addOnPaused(fn)
+{
+	debug("ADDONPAUSED");
+	onPaused.push(fn);
+}
+
+
+var onPlaying = [];
+function addOnPlaying(fn)
+{
+	debug("ADDONPLAYING");
+	onPlaying.push(fn);
+}
+
+
+var previousState = null;
+
+function playStateChanged() {
+	
+	playStateFromEvent = vid.playState;
+			
+	trace(getPlayState(vid.playState));
+	
+	if (quirksPlayer != null) {
+        debug("quirks1");
+		var newState = getPlayStateSimple(vid.playState);
+	
+		// Tell the quirks player that the state has changed
+		quirksPlayer.onStateChange(previousState,newState);	
+		previousState = getPlayStateSimple(vid.playState);
+		
+		if (newState == 'finished')
+		{
+			// Play the next quirks video
+			nextQuirksVideo();
+		}
+		
+	}
+	else
+	{
+        debug("quirks2");
+		switch(vid.playState) {
+			case 1:
+				debug("playing");
+				
+				debug("playStateChanged:playing");
+				
+				// Execute all the onPlaying handlers.
+				var i;
+				for(i = 0;i<onPlaying.length;i++)
+				{
+					onPlaying[i]();
+				}
+				
+				// reset the on pause queue
+				onPlaying = [];
+				
+				break;
+			case 2:
+			
+				debug("playStateChanged:pause");
+			
+				// Execute all the onPause handlers.
+				var i;
+				for(i = 0;i<onPaused.length;i++)
+				{
+					onPaused[i]();
+				}
+				
+				// reset the on pause queue
+				onPaused = [];
+			
+				// debug("paused");
+				break;
+			case 4:
+				// debug("buffering");
+				break;
+			case 5:
+				nextVideo();
+				break;
+		}
+	}
+	
+	updatePlayerInfo();
+	updatePlaylistInfo();
+	
+}
+
+
+function initPlaylist() {
+	currentPlaylistIndex = 0;	
+	videoData = playlistData.videos[currentPlaylistIndex];	
+}
+
+function changetVideoObjectData()
+{
+	vid.stop();
+	vid.type = videoData.mtype;
+	vid.data = videoData.source;
+	
+	playResult = vid.play(1);	
+}
+
+
+
+function queueNewVideoObject()
+{	
+	queueResult = vid.queue(videoData.source)
+	queuedVideoData = videoData;
+}
+
+function changeVideoObjectDataWithTimeout()
+{
+	vid.stop();
+	vid.type = "";
+	vid.data = "";
+	
+	setTimeout(function(){
+		vid.type = videoData.mtype;
+		vid.data = videoData.source;
+		playResult = vid.play(1);		
+	},1000);
+}
+
+// Used to get the next video in the playlist.
+// We assume that the video object exists.
+function getNextVideoData() 
+{
+	if (currentPlaylistIndex + 1 >= playlistData.videos.length)
+	{
+		if (loopingPlaylists) 
+		{
+			playlistData.videos[0];
+		}
+		else		 
+		{
+			return null;
+		}
+	}
+	return playlistData.videos[currentPlaylistIndex];
+}
+
+
+// Used to get the next video in the playlist.
+// We assume that the video object exists.
+function nextVideo() 
+{
+	debug("nextVideo");
+	++currentPlaylistIndex;
+	if (currentPlaylistIndex >= playlistData.videos.length)
+	{
+		if (loopingPlaylists) 
+		{
+			currentPlaylistIndex = 0;
+		}
+		else		 
+		{
+			return;
+		}
+	}
+
+	videoData = playlistData.videos[currentPlaylistIndex];
+
+	//
+	// Now play it...
+	//
+	
+	/*
+    if (quirksPlayer != null)
+	{
+		trace("QUIRKS: Next Video");		
+	}	
+	else*/
+	if (queueingPlaylists)
+	{
+		queueNewVideoObject();
+	}
+	else
+	{
+		createNewVideoObject();	
+	}
+	
+}
+
+function displayVideoList() {
+	var vidlistHTML = "";
+
+	for (i in videos) {
+		var href = document.location.pathname+"?videoID="+i;
+		vidlistHTML += "<li><a href='"+href+"'>"+videos[i].title+"</a></li>";
+	}
+	for (j in playlists) {
+		var href = document.location.pathname+"?playlistID="+j;
+		vidlistHTML += "<li><a href='"+href+"'>"+playlists[j].title+"</a></li>";
+	}
+	document.getElementById("vidlist").innerHTML = vidlistHTML;
+	addNavigation();
+}
+
+function setDeviceInfo() {
+	var html = "<strong>URL</strong>:" + document.location + "<br />";
+	html += "<strong>User Agent</strong>: " + navigator.userAgent + "<br />";
+	document.getElementById("deviceInfo").innerHTML += html;
+}
+
+
+function nextQuirksVideo()
+{
+	trace("QUIRKS: PLAY THE NEXT VIDEO");
+		
+		//
+		// Next item in playlist
+		//
+		
+		// debug("nextVideo");
+		++currentPlaylistIndex;
+		if (currentPlaylistIndex >= playlistData.videos.length)
+		{
+			if (loopingPlaylists) 
+			{
+				currentPlaylistIndex = 0;
+			}
+			else		 
+			{
+				debug("Not looping.. this is the end..");
+				return;
+			}
+		}
+
+		videoData = playlistData.videos[currentPlaylistIndex];					
+
+		//
+		// Seek or Play?
+		//
+
+		if (videoData.startTime > 0) 
+		{				
+			trace("QUIRKS: SEEK NEXT");
+					quirksPlayer.addCommand(new QuirksPlayer.Command(						
+				// Name
+				'seek-next',		
+				// Invoke
+				function() {
+					trace('INVOKE' + this.Name);
+															
+					this.Player.reportStatusChange(this.Player.LastKnownState,'buffering');
+						
+					// create the new object with all the right data and mime types
+					createNewVideoObject();
+					
+					// If this is true then we have seeked
+					this.Seeked = false;
+					
+					// issue the play command
+					var interval = setInterval(function(){
+						clearInterval(interval);
+						trace("PLAY (no seek required)")
+						vid.play(1);
+					},timerDelay);
+				},								
+				// Retry
+				null,
+				//function() {
+				//	trace('RETRY');
+				//},			
+				// On state change?
+				function(oldState, newState) {
+					trace('PLAY: ON STATE CHANGE ' + oldState + " -> " + newState);
+					
+					// At at this we are good.
+					if (newState == 'playing')
+					{
+						if (this.Seeked)
+						{
+							trace('playing after seek - have we seeked past our known location yet? POS=' + vid.playPosition + ' SEEK =' +  videoData.startTime);													
+							if ((vid.playPosition > videoData.startTime) && (!(this.Completed || this.Aborted)))
+							{							
+								trace('We are past so we have seeked!');							
+								this.complete();
+							}
+						}
+						else
+						{
+							trace('playing after play - so now we seek');
+							this.Seeked = true;
+							// issue the play command
+							var interval = setInterval(function(){
+								clearInterval(interval);								
+								vid.seek(videoData.startTime);								
+							},timerDelay);						
+						}
+					}
+				},			
+				// Tick - has playback progressed?
+				function() {						
+				
+						var playState = getPlayStateSimple(vid.playState);
+				
+						trace('TICK ' + this.Name + " STATE: " + playState + " POS:" + vid.playPosition + " START: " + videoData.startTime + " Completed: " + this.Completed + " Aborted: " + this.Completed);
+						
+						// If we are playing and seeked but not completed...
+						if ((playState == 'playing') && (this.Seeked) && (!(this.Completed || this.Aborted)))
+						{
+							// ...and we have gone past where we wanted to seek
+							if (vid.playPosition > videoData.startTime)
+							{	
+								trace('TICK: playing after seek - have we seeked past our known location yet? POS=' + vid.playPosition + ' SEEK =' +  videoData.startTime);
+							
+								trace('TICK: We are past so we have seeked!');							
+								this.complete();
+							}						
+						}						
+				},
+				// Is Complete?
+				function() {
+				
+					if (this.Completed == true)
+					{
+						trace('ISCOMPLETE ' + this.Name);
+					}							
+					return (this.Completed == true);
+				},
+				// On complete				
+				function() {	
+					trace('ONCOMPLETE ' + this.Name);				
+					this.Player.reportStatusChange(this.Player.LastKnownState,'playing');
+				}		
+				
+			));	
+		
+		}
+		else		
+		{
+			trace("QUIRKS: PLAY NEXT");
+			
+			quirksPlayer.addCommand(new QuirksPlayer.Command(						
+				// Name
+				'play-next',		
+				// Invoke
+				function() {
+					trace('INVOKE');
+										
+					this.Player.reportStatusChange(this.Player.LastKnownState,'buffering');
+						
+					// create the new object with all the right data and mime types
+					createNewVideoObject();
+					
+					// issue the play command
+					var interval = setInterval(function(){
+						clearInterval(interval);
+						trace("PLAY (no seek required)")
+						vid.play(1);
+					},timerDelay);
+				},								
+				// Retry
+				null,
+				//function() {
+				//	trace('RETRY');
+				//},			
+				// On state change?
+				function(oldState, newState) {
+					trace('PLAY: ON STATE CHANGE ' + oldState + " -> " + newState);
+					
+					// At at this we are good.
+					if ((newState == 'playing') && (!(this.Completed || this.Aborted)))
+					{
+						this.complete();
+					}
+				},			
+				// Tick - has playback progressed?
+				function() {
+						trace('TICK ' + this.Name);
+				},
+				// Is Complete?
+				function() {
+				
+					if (this.Completed == true)
+					{
+						trace('ISCOMPLETE ' + this.Name);
+					}							
+					return (this.Completed == true);
+				},
+				// On complete
+				function() {	
+
+					trace('ONCOMPLETE ' + this.Name);
+					this.Player.reportStatusChange(this.Player.LastKnownState,'playing');
+				}		
+
+			));							
+		}					
+				
+}
+
+window.onload = function() 
+{
+    
+
+	initApp();
+	registerKeyEventListener();
+	setDeviceInfo();
+
+	var videoID = getParameterByName("videoID");
+	videoData = videos[videoID];
+
+	var playlistID = getParameterByName("playlistID");
+	
+	debug("playlistID = " + playlistID);
+	
+	if (playlistID == "" || playlistID == null)
+	{
+		//playlistID = "dash_playready_playlist";
+		//playlistID = "mp4_playlist";		
+		//playlistID = "dash_playlist";				
+		playlistID = "dash_marlin_playlist";
+	}
+	
+	playlistData = playlists[playlistID];
+
+	displayVideoList();
+	
+	if (!videoData && !playlistData)
+	{
+		return;
+	}
+
+	var h2 = document.getElementsByTagName("h2")[0];
+	h2.innerHTML = "Current Test: " +  (playlistData ? playlistData.title : videoData.title);
+
+	//
+	// Create the quirks video player
+	//
+	
+	quirksPlayer = new QuirksPlayer(
+		// This is where we report our status back up to the chain
+		function(previousState,newState) 
+		{
+			debug('REPORT: STATE CHANGE ' + previousState + ' -> '  + newState);
+		}
+	);
+		
+	if (playlistData)
+	{
+		initPlaylist();
+	}
+	
+	if (quirksPlayer != null)
+	{
+		trace('QUIRKS: play first video');		
+		
+		//return;		
+		
+		quirksPlayer.addCommand(new QuirksPlayer.Command(
+		
+			// Name
+			'play',		
+			// Invoke
+			function() {
+				trace('INVOKE');
+								
+				this.Player.reportStatusChange(this.Player.LastKnownState,'buffering');
+				
+				// create the new object with all the right data and mime types
+				createNewVideoObject();
+				
+				// issue the play command
+				var interval = setInterval(function(){
+					clearInterval(interval);
+					trace("PLAY (no seek required)")
+					vid.play(1);
+				},timerDelay);
+				
+			},
+			// Retry
+			null,
+			//function() {
+			//	trace('RETRY');
+			//},			
+			// On state change?
+			function(oldState, newState) {
+				trace('PLAY: ON STATE CHANGE ' + oldState + " -> " + newState);
+				
+				if ((newState == 'playing') && (!(this.Completed || this.Aborted)))
+				{
+					trace('PLAY IS NOW COMPLETE');
+					this.complete();
+				}
+			},	
+			// Tick - has playback progressed?
+			function() {
+					trace('TICK ' + this.Name);
+			},
+			// Is Complete?
+			function() {
+				if (this.Completed == true)
+				{
+					trace('ISCOMPLETE ' + this.Name);
+				}
+				return (this.Completed == true);
+			},
+			// On complete
+			function() {							
+				trace('ONCOMPLETE ' + this.Name);			
+				this.Player.reportStatusChange(this.Player.LastKnownState,'playing');
+			}		
+			
+		));
+		
+		
+		
+		
+	}
+	else	
+	{
+		createNewVideoObject();		
+	}
+	
+	// Fired every 500ms to update diagnostics and progress the play-list
+	setInterval(function() 
+	{
+		updatePlayerInfo();
+		updatePlaylistInfo();
+		
+	
+		if (quirksPlayer != null)
+		{
+			quirksPlayer.tick();
+		}
+		
+		if (vid == null) return;
+				
+		if (queueingPlaylists)
+		{		
+			// Are we playing the next video yet
+			
+			var nextVideoData = getNextVideoData();
+			
+			if (nextVideoData != null)
+			{
+				if (vid.playPosition > 0)
+				{
+			
+					// If we are playing and we have not queued the next video	
+					//if (queuedVideoData == null)
+					//{
+					//	nextVideo();
+					//}
+					
+					if (queuedVideoData != null)
+					{
+						// If we are playing what we queued
+						if (queuedVideoData.source == vid.data)
+						{
+							nextVideo();
+						}
+					}
+				}
+			}
+		}
+		else		
+		{
+			if ((videoData.endTime!= null) && (videoData.endTime > 0) && (vid.playPosition >= videoData.endTime))
+			{
+				//trace("NEXT");				
+				if (quirksPlayer != null)
+				{
+					nextQuirksVideo();
+				}
+				else
+				{				
+					nextVideo();
+				}
+			}		
+		}
+	},500);
+};
+
+
+// How long before we retry
+var WATCHDOG_TIMEOUT = 240*1000;
+
+// How many times we retry
+var MAX_RETRIES = 5;
+
+// The player
+QuirksPlayer = function(statusReportFunction)
+{
+	// The list of commands
+	this.Commands = [];	
+	
+	// Where we should report our status upstream
+	this.StatusReportFunction = statusReportFunction;
+
+	// The last known good video that we played
+	this.LastKnownGoodURL = null;	
+
+	// The last known good position in that video we know of
+	this.LastKnownGoodPosition = null;	
+	
+	// The last known state
+	this.LastKnownState = null;		
+	
+}
+
+// Report our status change up the line...
+QuirksPlayer.prototype.reportStatusChange= function(oldStatus, newStatus)
+{
+	this.StatusReportFunction.apply(this,[oldStatus, newStatus]);
+	this.LastKnownState = newStatus;
+}
+
+// Add a command to the player
+QuirksPlayer.prototype.addCommand = function(command)
+{
+	trace('ADD COMMAND ' + command.Name);
+
+	// This is my player... 
+	command.Player = this;
+
+	//trace("addCommand " + command);
+	this.Commands.push(command);
+}
+
+// Remove a command from the player
+QuirksPlayer.prototype.removeTopmostCommand = function()
+{
+	trace('REMOVE COMMAND ' + this.Commands[0].Name);
+
+	//this.Commands[0].complete();
+	
+	this.Commands.shift();
+}
+
+// Called when player state changes
+QuirksPlayer.prototype.onStateChange = function(previousState,newState)
+{
+	try
+	{
+		trace('this.Commands.length = ' + this.Commands.length);
+
+		// Remove Completed commands from the top
+		while((this.Commands.length > 0) && (this.Commands[0].Aborted || this.Commands[0].isComplete()))
+		{
+			this.removeTopmostCommand();
+		}
+		
+		// If we have no command then this is our default behaviour
+		if (this.Commands.length == 0)
+		{
+			debug('CORE: state change ' + previousState + " -> " + newState);
+			// The context of this is no commands
+			
+			// Ship important state changes where they need to go?		
+			switch(newState)
+			{
+				case 'error':
+					// We are now in error.
+					this.reportStatusChange(previousState,newState);
+				break;			
+
+				case 'finished':
+					// We are now in error.
+					this.reportStatusChange(previousState,newState);
+				break;			
+
+				case 'stopped':
+					// We are now in error.
+					this.reportStatusChange(previousState,newState);
+				break;			
+				
+				case 'buffering':
+					switch(previousState)
+					{
+						case 'playing':
+							// We were buffering but now we are playing						
+							this.reportStatusChange(previousState,newState);
+						break;
+					}						
+				break;			
+				
+				case 'playing':
+					switch(previousState)
+					{
+						case 'buffering':
+							// We were playing but now we are buffering
+							this.reportStatusChange(previousState,newState);
+							
+						break;
+					}						
+				break;					
+			}
+		}
+		else	
+		{
+			debug('COMMAND: state change ' + previousState + " -> " + newState);
+		
+			// We have an active command		
+			var command = this.Commands[0];		
+			
+			if (command.Active)
+			{
+				command.onStateChange(previousState,newState);	
+			}
+			else
+			{
+				trace('COMMAND ' + command.Name + ' is not Active');
+			}
+			
+		}
+		
+		//
+		// Remove any complete commands from the queue
+		//
+		
+		// Remove Completed commands from the top
+		while((this.Commands.length > 0) && (this.Commands[0].Aborted || this.Commands[0].isComplete()))
+		{
+			this.removeTopmostCommand();
+		}
+
+
+		// Any new commands to make active?
+		if (this.Commands.length > 0 )
+		{
+			var command = this.Commands[0];		
+			
+			if (!command.Active)
+			{
+				trace('START COMMAND ' + command.Name);			
+				command.start();		
+			}	
+		}	
+	}
+	catch(e)
+	{
+		debug("ERROR: onStateChange: " + e);
+		this.Player.reportStatusChange(this.Player.LastKnownState,'error')	
+	}
+}
+
+// Runs on an inteval to ensure command can track position changes
+QuirksPlayer.prototype.tick = function()
+{
+
+	// Remove Completed commands from the top
+	while((this.Commands.length > 0) && (this.Commands[0].Aborted || this.Commands[0].isComplete()))
+	{
+		this.removeTopmostCommand();
+	}
+
+	// If we have no command then this is our default behaviour
+	if (this.Commands.length > 0 )
+	{
+		var command = this.Commands[0];		
+		
+		if (!command.Active)
+		{
+			trace('START COMMAND IN QUEUE');			
+			command.start();		
+		}
+		else
+		{
+			command.tick();
+		}
+	}
+	else
+	{
+		// NO COMMANDS
+		
+		var playState = getPlayStateSimple(vid.playState);
+
+		if (playState == 'playing')
+		{			
+			this.LastKnownGoodPosition = vid.playPosition;
+			this.LastKnownGoodURL = vid.data;
+			trace('LAST GOOD POSITION ' + this.LastKnownGoodPosition);			
+			trace('LAST GOOD URL ' + this.LastKnownGoodURL);			
+		}
+	}
+}
+
+// A command that has a defined work-flow handled by the anonymous functions passed in as parameters.
+QuirksPlayer.Command = function(name, invokeFunction, retryFunction, onStateChangeFunction, onTickFunction, isCompleteFunction, onCompleteFunction)
+{
+
+	// Get the name
+	this.Name = name;
+
+	// The player object this has been added to. This is set by this.addCommand(command)
+	this.Player = null; 
+	
+	// Has the command started
+	this.Active = false; 
+
+	// Has the command been completed
+	this.Completed = false; 
+
+	// Has the command been aborted
+	this.Aborted = false; 
+	
+	// How we start it
+	this.InvokeFunction = invokeFunction;
+	
+	// The watchdog timer
+	this.WatchdogTimer = null;
+	
+	// What we do if we need to retry. if null we will just re-run InvokeFunction
+	this.RetryFunction = retryFunction;
+
+	// How many retries we have attempted. Once we go over MAX_RETRIES we error.
+	this.Retries = 0;
+	
+	// Command is active and state has changed
+	this.OnStateChangeFunction = onStateChangeFunction;	
+
+	// Called when the clock fires. We use this to check the 
+	this.OnTickFunction = onTickFunction;	
+
+	// Function that should return true when we are complete
+	this.IsCompleteFunction = isCompleteFunction;
+	
+	// What we call when we are completed
+	this.OnCompleteFunction = onCompleteFunction;	
+	
+}
+
+// Start the command
+QuirksPlayer.Command.prototype.start = function()
+{
+	try
+	{	
+		trace('COMMAND ' + this.Name + ' START');
+		
+		// Because closure.
+		var command = this;
+		
+		// start and under watch of the watchdog
+		command.WatchdogTimer = setInterval(function(){
+			clearInterval(command.WatchdogTimer);
+			command.WatchdogTimer = null;	
+			debug('WOOF! ' + command.Name);	
+			
+			command.retry();
+			
+		},WATCHDOG_TIMEOUT);
+	
+		this.InvokeFunction.apply(this);
+	}
+	catch(e)
+	{
+		debug("ERROR: start: " + e);
+		this.Player.reportStatusChange(this.Player.LastKnownState,'error')
+	}
+	
+	this.Active  = true;
+}
+
+// Complete the command
+QuirksPlayer.Command.prototype.complete = function()
+{
+	try
+	{	
+		debug('COMMAND ' + this.Name + ' COMPLETE');
+		
+		if (this.WatchdogTimer != null)
+		{
+			clearInterval(this.WatchdogTimer);
+			this.WatchdogTimer = null;	
+		}
+		
+		// We are now complete
+		this.Completed = true;
+		
+		if (this.OnCompleteFunction != null)
+		{
+			this.OnCompleteFunction.apply(this);
+		}
+	}
+	catch(e)
+	{
+		debug("ERROR: start: " + e);
+		this.Player.reportStatusChange(this.Player.LastKnownState,'error')
+	}
+	
+}
+
+// Abort the command
+QuirksPlayer.Command.prototype.abort = function()
+{
+	try
+	{		
+		trace('COMMAND ' + this.Name + ' ABORT');
+		
+		if (this.WatchdogTimer != null)
+		{
+			clearInterval(this.WatchdogTimer);
+			this.WatchdogTimer = null;	
+		}
+		
+		// We are now aborted
+		this.Aborted = true;
+				
+		//if (this.OnAbortedFunction != null)
+		//{
+		//	this.OnAbortedFunction.apply(this);
+		//}		
+	}
+	catch(e)
+	{
+		debug("ERROR: retry: " + e);
+		this.Player.reportStatusChange(this.Player.LastKnownState,'error')
+	}		
+}
+
+// Retry the command at most MAX_RETRIES times.
+QuirksPlayer.Command.prototype.retry = function()
+{
+	try
+	{				
+		debug('COMMAND ' + this.Name + ' RETRY #' + (this.Retries + 1));
+		
+		if (this.Retries >= MAX_RETRIES)
+		{
+			debug('RETRIES EXHAUSTED - GIVING UP');
+			this.abort();
+			this.Player.reportStatusChange(this.Player.LastKnownState,'error')
+			return;
+		}
+		
+		this.Retries++;
+		
+		// Because closure.
+		var command = this;
+		
+		// start and under watch of the watchdog
+		command.WatchdogTimer = setInterval(function(){
+			clearInterval(command.WatchdogTimer);
+			command.WatchdogTimer = null;	
+			debug('WOOF! (RETRY)' + command.Name);	
+			
+			command.retry();
+			
+		},WATCHDOG_TIMEOUT);
+		
+		if (this.RetryFunction != null)
+		{
+			this.RetryFunction.apply(this);
+		}
+		else
+		{
+			this.InvokeFunction.apply(this);
+		}
+	}
+	catch(e)
+	{
+		debug("ERROR: retry: " + e);
+		this.Player.reportStatusChange(this.Player.LastKnownState,'error')
+	}		
+}
+
+
+
+// Return true if this command is complete
+QuirksPlayer.Command.prototype.isComplete = function()
+{	
+	try
+	{	
+		return this.IsCompleteFunction.apply(this);
+	}
+	catch(e)
+	{
+		debug("ERROR: isComplete: " + e);
+		this.Player.reportStatusChange(this.Player.LastKnownState,'error')
+	}	
+}
+
+// Notify the player and commands of state change
+QuirksPlayer.Command.prototype.onStateChange = function(oldState,newState)
+{	
+	try
+	{
+		return this.OnStateChangeFunction.apply(this,[oldState,newState]);
+	}
+	catch(e)
+	{
+		debug("ERROR: onStateChange: " + e);
+		this.Player.reportStatusChange(this.Player.LastKnownState,'error')
+	}	
+}
+
+// Allow commands to update themselves
+QuirksPlayer.Command.prototype.tick = function()
+{	
+	try
+	{
+		return this.OnTickFunction.apply(this);
+	}
+	catch(e)
+	{
+		debug("ERROR: tick: " + e);
+		this.Player.reportStatusChange(this.Player.LastKnownState,'error')
+	}	
+}
+
+var quirksPlayer = null;
+
+/*
+var VirtualVideoObject = function()
+{
+	this.data;
+	this.playPosition;
+	this.playState;
+
+
+	// Create quirks player
+
+}
+
+VirtualVideoObject.prototype.play = function(speed)
+{
+
+}
+
+VirtualVideoObject.prototype.seek = function(speed)
+{
+
+}
+
+VirtualVideoObject.prototype.stop = function(speed)
+{
+
+}
+*/
+
+//]]>
+</script>
+</body>
+</html>
+

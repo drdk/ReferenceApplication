@@ -10,6 +10,11 @@
                     "submenu": 7
                 },
                 {
+                    "title": "james",
+                    "eval": "location.href='james.html'",
+                    "app": 0
+                },
+                {
                     "title": "NoDRM",
                     "app": 0,
                     "submenu": 1
