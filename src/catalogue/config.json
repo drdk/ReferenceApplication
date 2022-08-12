@@ -690,7 +690,7 @@
                 {
                     "title": "james",
                     "eval": "location.href='../james.html'",
-                    "img": "icons/icons_1x1_funny.pngg",
+                    "img": "icons/icons_1x1_funny.png",
                     "app": 0,
                     "desc": "Link to james.html"
                 }
