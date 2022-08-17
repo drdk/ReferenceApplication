@@ -615,14 +615,14 @@
                     "url": "https://drodtest01a.akamaized.net/all/clear/none/xx/dashtest2022/fmp4/manifest.mpd",
                     "img": "icons/icons_1x1_1080p.png",
                     "app": 6,
-                    "desc": "Her kan jeg skrive en beskrivelse"
+                    "desc": "As-is from hybrik"
                 },
                 {
                     "title": "Dash M4S DRTV-AVC-4.1 clear",
                     "url": "https://drodtest01a.akamaized.net/all/clear/none/xx/dashtest2022/segmented_mp4/manifest.mpd",
                     "img": "icons/icons_1x1_1080p.png",
                     "app": 6,
-                    "desc": "Her kan jeg skrive en beskrivelse"
+                    "desc": "As-is from hybrik"
                 },
                 {
                     "title": "2nd Dash FMP4 DRTV-AVC-4.1 clear",
@@ -647,17 +647,17 @@
                 },
                 {
                     "title": "R1 Dash FMP4 DRTV-AVC-4.1",
-                    "url": "https://drodtest02b.akamaized.net/all/clear/none/9e/627909ee13d7461c4c32b59e/00231885020/stream_fmp4/master_manifest.mpd",
+                    "url": "https://drodtest01a.akamaized.net/all/clear/none/86/62a1ab7713d7462ca892e486/00231895010/stream_fmp4/master_manifest.mpd",
                     "img": "icons/icons_1x1_1080p.png",
                     "app": 6,
-                    "desc": "as-is unmodified"
+                    "desc": "true as-is (should be 100% as current vod dash manifests)"
                 },
                 {
                     "title": "R1a Dash FMP4 DRTV-AVC-4.1",
-                    "url": "https://drodtest02b.akamaized.net/all/clear/none/9e/627909ee13d7461c4c32b59e/00231885020/stream_fmp4/master_manifest2.mpd",
+                    "url": "https://drodtest01a.akamaized.net/all/clear/none/86/62a1ab7713d7462ca892e486/00231895010/stream_fmp4/master_manifest-nomono.mpd",
                     "img": "icons/icons_1x1_1080p.png",
                     "app": 6,
-                    "desc": "as-is minus mono sound"
+                    "desc": "true as-is (should be 100% as current vod dash manifests) minus mono sound"
                 },
                 {
                     "title": "R2 Dash FMP4 DRTV-HEVC-5.0",
