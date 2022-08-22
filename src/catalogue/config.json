@@ -693,6 +693,13 @@
                     "img": "icons/icons_1x1_funny.png",
                     "app": 0,
                     "desc": "Link to james.html"
+                }, 
+                {
+                    "title": "test9",
+                    "eval": "location.href='https://test9-hbbtv.dr-massive.com/drtest/drtv/index.html'",
+                    "img": "icons/icons_1x1_funny.png",
+                    "app": 0,
+                    "desc": "Link to https://test9-hbbtv.dr-massive.com/drtest/drtv/index.htm"
                 }
             ]
         }
