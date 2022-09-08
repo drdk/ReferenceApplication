@@ -646,6 +646,20 @@
                     "desc": "two audio tracks (no mono) , and minus other minnor tweaks"
                 },
                 {
+                    "title": "hbbtv15 Dash FMP4 DRTV-AVC-4.1 clear",
+                    "url": "https://drodtest01a.akamaized.net/all/clear/none/xx/dashtest2022/fmp4/manifest-hbbtv15.mpd",
+                    "img": "icons/icons_1x1_1080p.png",
+                    "app": 6,
+                    "desc": "as 4th test but with modified profiles urns for hbbtv1.5"
+                },                
+                {
+                    "title": "hbbtv20 Dash FMP4 DRTV-AVC-4.1 clear",
+                    "url": "https://drodtest01a.akamaized.net/all/clear/none/xx/dashtest2022/fmp4/manifest-hbbtv20.mpd",
+                    "img": "icons/icons_1x1_1080p.png",
+                    "app": 6,
+                    "desc": "as 4th test but with modified profiles urns for hbbtv2.0.1"
+                },
+                {
                     "title": "R1 Dash FMP4 DRTV-AVC-4.1",
                     "url": "https://drodtest01a.akamaized.net/all/clear/none/86/62a1ab7713d7462ca892e486/00231895010/stream_fmp4/master_manifest.mpd",
                     "img": "icons/icons_1x1_1080p.png",
