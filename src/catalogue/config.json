@@ -721,6 +721,20 @@
                     "img": "icons/icons_1x1_funny.png",
                     "app": 0,
                     "desc": "Link to https://hbbtv.play.svt.se/v2/index.html#/hidden/entrance/entrance"
+                },
+                {
+                    "title": "ARTE HbbTV",
+                    "eval": "location.href='http://www.arte.tv/redbutton/index.html'",
+                    "img": "icons/icons_1x1_funny.png",
+                    "app": 0,
+                    "desc": "Link to http://www.arte.tv/redbutton/index.html""
+                },
+                {
+                    "title": "ARD HbbTV",
+                    "eval": "location.href='http://itv.ard.de/ardstart/index.html'",
+                    "img": "icons/icons_1x1_funny.png",
+                    "app": 0,
+                    "desc": "Link to http://itv.ard.de/ardstart/index.html"
                 }
             ]
         }
