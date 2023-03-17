@@ -714,6 +714,13 @@
                     "img": "icons/icons_1x1_funny.png",
                     "app": 0,
                     "desc": "Link to https://test9-hbbtv.dr-massive.com/drtest/drtv/index.htm"
+                },
+                {
+                    "title": "SVT HbbTV",
+                    "eval": "location.href='https://hbbtv.play.svt.se/v2/index.html#/hidden/entrance/entrance'",
+                    "img": "icons/icons_1x1_funny.png",
+                    "app": 0,
+                    "desc": "Link to https://hbbtv.play.svt.se/v2/index.html#/hidden/entrance/entrance"
                 }
             ]
         }
