@@ -735,6 +735,13 @@
                     "img": "icons/icons_1x1_funny.png",
                     "app": 0,
                     "desc": "Link to http://itv.ard.de/ardstart/index.html"
+                },
+                {
+                    "title": "ZDF HbbTV",
+                    "eval": "location.href='http://hbbtv.zdf.de/zdfm3/index.php?svc=0'",
+                    "img": "icons/icons_1x1_funny.png",
+                    "app": 0,
+                    "desc": "Link to http://hbbtv.zdf.de/zdfm3/index.php?svc=0"
                 }
             ]
         }
