@@ -702,6 +702,17 @@
                     "desc": ""
                 },
                 {
+                    "title": "DRTV Clearkey CBCS",
+                    "url": "https://drodtest01c.akamaized.net/all/encrypted/none/xx/segtest/stream_smp4/master_manifest.mpd",
+                    "img": "icons/icons_1x1_1080p.png",
+                    "app": 6,
+                    "drm": "clearkey",
+                    "desc": "DRTV Clearkey CBCS - Akamai",
+                    "profile": [
+                        "mse-eme"
+                    ]
+                },
+                {
                     "title": "james",
                     "eval": "location.href='../james.html'",
                     "img": "icons/icons_1x1_funny.png",
