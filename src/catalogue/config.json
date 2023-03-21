@@ -710,7 +710,7 @@
                     "la_url": "https://refapp.hbbtv.org/videos/laurl_ck.php",
                     "desc": "DRTV Clearkey CBCS - Akamai",
                     "profile": [
-                        "mse-eme"
+                        "html5"
                     ]
                 },
                 {
