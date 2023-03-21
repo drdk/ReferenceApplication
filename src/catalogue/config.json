@@ -707,6 +707,7 @@
                     "img": "icons/icons_1x1_1080p.png",
                     "app": 6,
                     "drm": "clearkey",
+                    "la_url": "https://refapp.hbbtv.org/videos/laurl_ck.php"
                     "desc": "DRTV Clearkey CBCS - Akamai",
                     "profile": [
                         "mse-eme"
