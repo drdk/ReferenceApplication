@@ -750,11 +750,11 @@
                     "desc": "Link to http://www.arte.tv/redbutton/index.html"
                 },
                 {
-                    "title": "ARD HbbTV",
-                    "eval": "location.href='http://itv.ard.de/ardstart/index.html'",
+                    "title": "Ales D3 HbbTV",
+                    "eval": "location.href='https://rippl.cz'",
                     "img": "icons/icons_1x1_funny.png",
                     "app": 0,
-                    "desc": "Link to http://itv.ard.de/ardstart/index.html"
+                    "desc": "Link to https://rippl.cz"
                 },
                 {
                     "title": "ZDF HbbTV",
