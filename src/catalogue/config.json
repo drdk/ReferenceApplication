@@ -751,10 +751,10 @@
                 },
                 {
                     "title": "Ales D3 HbbTV",
-                    "eval": "location.href='https://rippl.cz'",
+                    "eval": "location.href='https://rippl.cz/streams'",
                     "img": "icons/icons_1x1_funny.png",
                     "app": 0,
-                    "desc": "Link to https://rippl.cz"
+                    "desc": "Link to https://rippl.cz/streams"
                 },
                 {
                     "title": "ZDF HbbTV",
