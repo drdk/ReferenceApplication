@@ -699,19 +699,45 @@
                     "url": " https://drodtest01c.akamaized.net/all/clear/none/xx/segtest/stream_smp4/master_manifest.mpd",
                     "img": "icons/icons_1x1_1080p.png",
                     "app": 6,
-                    "desc": ""
+                    "desc": "DRTV Riget XXL clear"
+                },
+        {
+                    "title": "DRTV Clearkey CBCS - Riget XXL",
+                    "url": "https://drodtest01c.akamaized.net/all/encrypted/none/xx/segtest/stream_smp4/master_manifest.mpd",
+                    "img": "icons/icons_1x1_1080p.png",
+                    "app": 6,
+                    "drm": "clearkey",
+                    "la_url": "https://refapp.hbbtv.org/videos/laurl_ck.php",
+                    "desc": "DRTV Clearkey CBCS - Akamai - with DRM profile",
+                    "profile": [
+                        "mse-eme","html5"
+                    ]
+                },
+                {
+                    "title": "DRTV Clearkey CENC - Riget XXL",
+                    "url": "https://drodtest01c.akamaized.net/all/encrypted/none/xx/segtest/stream_smp4/master_manifest.mpd?aka_dme_enc=cenc",
+                    "img": "icons/icons_1x1_1080p.png",
+                    "app": 6,
+                    "drm": "clearkey",
+                    "la_url": "https://refapp.hbbtv.org/videos/laurl_ck.php",
+                    "desc": "DRTV Clearkey CBCS - Akamai with Clearkey DRM profile",
+                    "profile": [
+                        "mse-eme","html5"
+                    ]
                 },
                 {
                     "title": "DRTV Clearkey CBCS - Riget XXL",
                     "url": "https://drodtest01c.akamaized.net/all/encrypted/none/xx/segtest/stream_smp4/master_manifest.mpd",
                     "img": "icons/icons_1x1_1080p.png",
                     "app": 6,
-                    "drm": "clearkey",
-                    "la_url": "https://refapp.hbbtv.org/videos/laurl_ck.php?kid=987c6727bb2d10e36e926e4f2bbf9bfd",
-                    "desc": "DRTV Clearkey CBCS - Akamai",
-                    "profile": [
-                        "mse-eme","html5"
-                    ]
+                    "desc": "DRTV Clearkey CBCS - No DRM profile",      
+                },
+                        {
+                    "title": "DRTV Clearkey CENC - Riget XXL",
+                    "url": "https://drodtest01c.akamaized.net/all/encrypted/none/xx/segtest/stream_smp4/master_manifest.mp?aka_dme_enc=cenc",
+                    "img": "icons/icons_1x1_1080p.png",
+                    "app": 6,
+                    "desc": "DRTV Clearkey CBCS - No DRM profile",  
                 },
                 {
                     "title": "DR1 DASH SUBS",
