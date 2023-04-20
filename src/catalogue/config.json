@@ -436,6 +436,26 @@
                     ]
                 },
                 {
+					"title": "4.1b AVC 1080p video",
+					"url": "https://refapp.hbbtv.org/videos/02_gran_dillama_1080p_25f75g6sv7/drm/manifest_clearkey.mpd",
+					"img": "icons/icons_1x1_1080p.png",
+					"app": 6,
+					"drm" : "clearkey",
+					"la_url" : "https://refapp.hbbtv.org/videos/laurl_ck.php?kid=43215678123412341234123412341236",
+					"desc": "ClearKey drm, laurl override method (v7)",
+					"profile" : ["mse-eme"]							
+				},
+				{
+					"title": "4.2b HEVC 2160p video ",
+					"url": "https://refapp.hbbtv.org/videos/01_llama_drama_2160p_25f75g6sv2/drm/manifest_clearkey.mpd",
+					"img": "icons/icons_1x1_2160p.png",
+					"app": 6,
+					"drm" : "clearkey",
+					"la_url" : "https://refapp.hbbtv.org/videos/laurl_ck.php?kid=43215678123412341234123412341235",
+					"desc": "ClearKey drm, laurl override method",
+					"profile" : ["mse-eme"]							
+				},
+                {
                     "title": "4.5 Advert insertion (v4)",
                     "url": "../../videos/02_gran_dillama_1080p_25f75g6sv4/drm/manifest_clearkey.mpd",
                     "img": "icons/icons_1x1_insert-ad.png",
