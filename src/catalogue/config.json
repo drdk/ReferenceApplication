@@ -729,7 +729,7 @@
                 },
                 {
                     "title": "Riget XXL - CENC encryption",
-                    "url": "https://drodtest01c.akamaized.net/all/encrypted/none/xx/segtest/stream_smp4/master_manifest.mpd",
+                    "url": "https://drodtest01c.akamaized.net/all/encrypted/none/xx/segtest/stream_smp4/master_manifest.mpd?aka_dme_enc=cenc",
                     "img": "icons/icons_1x1_1080p.png",
                     "app": 6,
                     "drm": "clearkey",
