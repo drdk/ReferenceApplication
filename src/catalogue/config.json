@@ -760,11 +760,11 @@
                     ]
                 },
                 {
-                    "title": "DR1 DASH SUBS",
-                    "url": "https://drtesttextdash.akamaized.net/dash/live/2015584/drtesttext/manifest.mpd",
+                    "title": "DR1 DASH Clearkey CENC",
+                    "url": "https://drtestdash-secure.akamaized.net/dash/live/2014203/drtest/manifest.mpd?aka_dme_enc=cenc",
                     "img": "icons/icons_1x1_livestream.png",
                     "app": 6,
-                    "desc": "DR1 DASH subs",
+                    "desc": "DR1 Clearkey CENC",
                     "live": true
                 },     
                 {
