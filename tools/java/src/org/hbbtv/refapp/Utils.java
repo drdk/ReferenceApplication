@@ -14,18 +14,19 @@ public class Utils {
 	public static final String getString(Map<String,String> params, String key, String defval, boolean trim) {
 		String val = params.get(key);
 		if (trim && val!=null) val=val.trim();
-		return (val==null || val.equals("") ? defval : val);
+		return (val==null || val.isEmpty() ? defval : val);
 	}
 	
 	public static final boolean getBoolean(Map<String,String> params, String key, boolean defval) {
 		String val = params.get(key);
-		if (val==null || val.equals("")) return defval;
-		else return val.equals("1") || val.equalsIgnoreCase("true") || val.equalsIgnoreCase("yes");
+		if (val==null || val.isEmpty()) return defval;
+		else return val.equals("1") || val.equalsIgnoreCase("true") 
+				|| val.equalsIgnoreCase("yes");
 	}
 
 	public static final long getLong(Map<String,String> params, String key, long defval) {
 		String val = params.get(key);
-		if (val==null || val.equals("")) return defval;
+		if (val==null || val.isEmpty()) return defval;
 		else return Long.parseLong(val);
 	}
 	
@@ -49,7 +50,14 @@ public class Utils {
 				params.put(args[idx].trim(), "");
 		}
 		
-		// read config file		
+		// read config file or use a default dasher.properties in a dasher app folder
+		if (!params.containsKey("config")) {
+			// "C:\apps\refapp\tools\java\lib" -> "C:/apps/refapp/tools/java/dasher.properties"
+			String libFolder = Utils.getLibraryFolder(MediaTools.class);
+			libFolder = Utils.normalizePath(libFolder, true);
+			params.put("config", new File(libFolder).getParent()+"/dasher.properties" );
+		}
+		
 		String config = getString(params, "config", "", true);
 		if (!config.isEmpty()) {
 			FileInputStream fis = new FileInputStream(config);
@@ -70,7 +78,27 @@ public class Utils {
 		
 		return params;
 	}
+	
+	/**
+	 * Split args "key1=val1 key2=val2" to params
+	 * @param params	write key=value to params
+	 * @param keyPrefix keyprefix "input.1." -> "input.1.key1=val1 input.1.key2=val2"
+	 * @param args
+	 */
+	public static void putArgsToParams(Map<String,String> params, String keyPrefix, String[] args) {
+		for(int idx=0; idx<args.length; idx++) {
+			int delim=args[idx].indexOf('=');
+			if(delim>0) params.put( keyPrefix+args[idx].substring(0,delim), args[idx].substring(delim+1) );
+		}			
+	}
 
+    public static String getStackTrace(Throwable ex) {
+		StringWriter sw = new StringWriter();
+		PrintWriter pw = new PrintWriter(sw);
+		ex.printStackTrace(pw);
+		return sw.toString();
+    }
+    
 	/**
 	 * Get system timestamp as string
 	 * @return	yyyy-MM-dd hh:mm:ss
@@ -97,6 +125,46 @@ public class Utils {
 		sb.append( (s < 10 ? "0" + s : "" + s) );
 		return sb.toString();
 	}
+	
+	   /**
+	    * Parse ISO8601 duration string
+	    * @param value P2Y11M4W2DT8H29M59.124S
+	    * returns milliseconds 0..n
+	    */
+	public static long parseISODuration(String value) {
+       // http://en.wikipedia.org/wiki/ISO_8601 as (P)eriod(T)ime format 
+       // PT29M, PT4M30S, PT2H25M, PT52S, P1Y, PT3H, P2Y11M4W2DT8H29M59S, PT1M32.800S
+       if (value==null || value.equals("")) return 0;
+       
+       long seconds=0, millis=0;
+       int startIdx=-1, endIdx=-1;
+       boolean isTime=false;
+       for(int idx=0; idx < value.length(); idx++) {
+           char ch = value.charAt(idx);
+           if (ch=='P') { isTime=false; }
+           else if (ch=='T') { isTime=true; }
+           else if (Character.isDigit(ch)) {
+               if (startIdx<0) startIdx=idx;
+           } else {
+               endIdx=idx;
+               long num = Long.parseLong(value.substring(startIdx, endIdx));
+               if (ch=='Y') seconds+=num*31556926; // value*seconds
+               else if (ch=='M' && !isTime) seconds+=num*2629743;
+               else if (ch=='W') seconds+=num*604800;
+               else if (ch=='D') seconds+=num*86400;
+               else if (ch=='H') seconds+=num*3600;
+               else if (ch=='M' && isTime) seconds+=num*60;
+               else if (ch=='S') seconds+=num; // seconds only "32S"
+               else if (ch=='.') {
+            	   seconds+=num; // seconds and millis "32.008S"
+            	   millis = Long.parseLong(value.substring(idx+1, value.length()-1));
+            	   break;
+               }
+               startIdx=endIdx=-1;
+           }
+       }
+       return seconds*1000+millis;
+	}	
 
 	/**
 	 * Convert hexstring to byte array
@@ -135,7 +203,7 @@ public class Utils {
 		return DatatypeConverter.printBase64Binary(buf);
 	}	
 
-	public static byte[] bse64Decode(String buf) {
+	public static byte[] base64Decode(String buf) {
 		return DatatypeConverter.parseBase64Binary(buf);
 	}
 
@@ -173,8 +241,40 @@ public class Utils {
             (byte)(value >>> 24)};
 	}
 	
+    public static int getFourCCInt(String text) {
+    	// 4CC("cbcs") to integer(1667392371)
+        int val = 0;
+        for (int idx = 0; idx < 4; idx++) {
+            val <<= 8;
+            val |= text.charAt(idx);
+        }
+        return val;
+    }
+    
+    public static String getFourCC(int value) {
+    	// 4CC integer(1667392371) to text("cbcs")     	
+        String s = "";
+        s += (char) ((value >> 24) & 0xFF);
+        s += (char) ((value >> 16) & 0xFF);
+        s += (char) ((value >> 8) & 0xFF);
+        s += (char) (value & 0xFF);
+        return s;
+	}	
+
+    public static String getUUID() {
+    	// create UUID like "6f1f2c09-ce9d-4194-bb8c-709bd9f51231"
+    	UUID uuid = UUID.randomUUID();
+    	return uuid.toString();
+    }
+    
 	public static boolean isWindows() {
 		return System.getProperty("os.name").toLowerCase(Locale.US).indexOf("windows") != -1;
+	}
+	
+	public static byte[] trimArray(byte[] arr, int trimLeadingBytes, int trimTrailingBytes) {
+		byte[] newArr = new byte[arr.length-trimLeadingBytes-trimTrailingBytes];
+		System.arraycopy(arr, trimLeadingBytes, newArr, 0, newArr.length);
+		return newArr;
 	}
 		
 	/**
@@ -228,6 +328,25 @@ public class Utils {
 	}
 
 	/**
+	 * Explode to list, skip empty tokens in a values string.
+	 */
+	public static List<String> getList(String values, String delim) {
+		List<String> list = new ArrayList<String>(8);
+		for(String val : values.split(delim)) {
+			val = val.trim();
+			if(!val.isEmpty()) list.add(val);
+		}
+		return list;
+	}
+	
+	public static int indexOfArray(String[] arr, String val) {
+		for(int idx=0; idx<arr.length; idx++) {
+			if(arr[idx].equalsIgnoreCase(val)) return idx;
+		}
+		return -1;
+	}
+
+	/**
 	 * Copy file.
 	 * @param sFile	source
 	 * @param dFile	destination
@@ -264,6 +383,14 @@ public class Utils {
         dFile.setLastModified(sFile.lastModified());
 	}
 	
+	public static void moveFile(File sFile, File dFile) throws IOException {
+		// rename succeeded, src and dest files were in a same folder
+		if (sFile.renameTo(dFile))
+			return;		
+		copyFile(sFile, dFile);
+		sFile.delete();
+	}	
+	
 	public static StringBuilder loadTextFile(File file, String charset) throws IOException {
 		FileInputStream fis=new FileInputStream(file);
 		try {
@@ -282,6 +409,23 @@ public class Utils {
 		}		
 	}
 	
+	/**
+	 * Read binary file.
+	 */
+	public static byte[] readFile(File file) throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		FileInputStream fis = new FileInputStream(file);
+		try {
+			byte[] buf=new byte[2*1024];
+			int read;
+			while( (read=fis.read(buf))>-1 )
+				baos.write(buf, 0, read);
+		} finally {
+			fis.close();
+		}
+		return baos.toByteArray();
+	}
+		
 	public static void saveFile(File file, byte[] b) throws IOException {
 		BufferedOutputStream bos = null;
 		FileOutputStream fos = null;		
@@ -370,47 +514,5 @@ public class Utils {
 		   	return path;
 	}   	
 
-	
-	/**
-	 * XML encode string
-	 * @param s
-	 * @param useApos	usually is true
-	 * @param keepNewlines usually is false
-	 * @return
-	 */
-	public static String XMLEncode(String s, boolean useApos, boolean keepNewlines) {
-		StringBuilder str = new StringBuilder();
-		int len = (s != null ? s.length() : 0);
-		for (int i = 0; i < len; i++) {
-			char ch = s.charAt(i);
-			switch (ch) {
-			case '<': {    str.append("&lt;");     break; }
-			case '>': {    str.append("&gt;");     break; }
-			case '&': {    str.append("&amp;");    break; }
-			case '"': {    str.append("&quot;");   break; }
-			case '\'': {   
-				if (useApos) str.append("&apos;");
-				else str.append("&#39;");
-				break; }
-//            case '€': {    str.append("&#8364;"); break; }
-			case '\r':
-			case '\n':
-			case '\t':
-			case '\f': {
-				if (keepNewlines) {
-					str.append(ch);
-				} else {
-					str.append("&#");
-					str.append(Integer.toString(ch));
-					str.append(';');
-				}
-				break; }
-			default: {
-				str.append(ch);
-				}
-			}
-		}
-		return str.toString();
-	}
 	
 }

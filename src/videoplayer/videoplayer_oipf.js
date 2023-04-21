@@ -19,7 +19,6 @@ function VideoPlayer(element_id, profile, width, height){
 }
 
 VideoPlayer.prototype.createPlayer = function(){
-	
 	console.log("createPlayer()");
 	
 	var self = this;
@@ -47,12 +46,9 @@ VideoPlayer.prototype.createPlayer = function(){
 };
 
 VideoPlayer.prototype.setURL = function(url){
-	console.log("setURL(",url,")");
+	url = url.replace("${GUID}", uuidv4());
+	console.log("setURL("+url+")");
 	
-	// add defaultVideoRoot prefix for non abolute video urls if defaultVideoRoot is set
-	if( ! url.match(/^https?\:/) && typeof defaultVideoRoot == "string" && defaultVideoRoot.length ){
-	//	url = defaultVideoRoot + url;
-	}
 	var type = "application/dash+xml";
 	if( url.match(/mp4$/) ){
 		this.video.setAttribute("type", "video/mp4");
@@ -61,7 +57,7 @@ VideoPlayer.prototype.setURL = function(url){
 		this.video.setAttribute("type", type );
 	}
 	try{
-		//this.url = url;
+		this.url = url; // see sendLicenseRequest()
 		this.video.data = url;
 	} catch( e ){
 		console.log( e.message );
@@ -113,10 +109,8 @@ VideoPlayer.prototype.prepareAdPlayers = function(){
 		console.log( e.type );
 		var player = $(this);
 		if( self.adCount < self.adBuffer.length ){
-			player.addClass("hide");
-			
-			self.playAds();
-			
+			player.addClass("hide");			
+			self.playAds();			
 		}
 		else{
 			// no more ads, continue content
@@ -125,15 +119,14 @@ VideoPlayer.prototype.prepareAdPlayers = function(){
 			player.addClass("hide"); // hide ad video
 			$("#adInfo").removeClass("show");
 			
-			self.video.play();
+			self.video.play(1);
 			$(self.video).removeClass("hide"); // show content video
 		}
 		
 	};
 	
 	var onAdPlay = function(){ 
-		//console.log("ad play event triggered");
-		
+		//console.log("ad play event triggered");		
 		//$("#adInfo").html("");
 	};
 	
@@ -166,16 +159,13 @@ VideoPlayer.prototype.getAds = function( adBreak ){
 	this.adCount = 0;
 	this.video.pause();
 	var self = this;
-	console.log("get ads breaks=" + adBreak.ads);
-	$.get( "../getAds.php?breaks=" + adBreak.ads, function(ads){
+	console.log("get ads breaks=" + adBreak.ads + ", position="+adBreak.position );
+	$.get( "../getAds.php?breaks=" + adBreak.ads + "&position="+adBreak.position, function(ads){
 		self.adBuffer = ads;
 		//self.adCount = ads.length;
-		console.log( "Got " + ads.length + " ads");
-		
-		self.prepareAdPlayers();
-		
-		self.playAds();
-		
+		console.log( "Got " + ads.length + " ads");		
+		self.prepareAdPlayers();		
+		self.playAds();		
 	}, "json" );
 };
 
@@ -216,17 +206,13 @@ VideoPlayer.prototype.setSubtitles = function( subtitles ){
 	else{
 		this.subtitles = null;
 	}
-}
+};
 
 VideoPlayer.prototype.clearLicenseRequest = function(callback){
 	console.log("clearLicenseRequest()");
 	
-	/***
-		if drm object exists set empty acquisition
-	***/
-
-	this.oipfDrm = $("#oipfDrm")[0];
-	
+	// if drm object exists set an empty acquisition
+	this.oipfDrm = $("#oipfDrm")[0];	
 	if( !this.oipfDrm ){
 		if( callback ){
 			callback("oipfDrm is null");
@@ -234,33 +220,48 @@ VideoPlayer.prototype.clearLicenseRequest = function(callback){
 		return;
 	}
 	
+	var msgType="";
 	var self = this;
-	if( this.drm.system == "playready" ){
-		var msgType = "application/vnd.ms-playready.initiator+xml";
+	if(!this.drm || !this.drm.system) {
+		callback();
+		return;
+	} else if(this.drm.system.indexOf("playready")===0) {
+		msgType = "application/vnd.ms-playready.initiator+xml";
 		var xmlLicenceAcquisition =
 		'<?xml version="1.0" encoding="utf-8"?>' +
 		'<PlayReadyInitiator xmlns="http://schemas.microsoft.com/DRM/2007/03/protocols/">' +
+		  '<LicenseServerUriOverride><LA_URL></LA_URL></LicenseServerUriOverride>' +
 		'</PlayReadyInitiator>';
-		var DRMSysID = "urn:dvb:casystemid:19219";
-		
-	}
+		var DRMSysID = "urn:dvb:casystemid:19219";		
+	}	
 	else if( this.drm.system == "marlin" ){
-		var msgType = "application/vnd.marlin.drm.actiontoken+xml";
+		msgType = "application/vnd.marlin.drm.actiontoken+xml";
 		var xmlLicenceAcquisition =
 		'<?xml version="1.0" encoding="utf-8"?>' +
 		'<Marlin xmlns="http://marlin-drm.com/epub"><Version>1.1</Version><RightsURL><RightsIssuer><URL></URL></RightsIssuer></RightsURL></Marlin>';
 		var DRMSysID = "urn:dvb:casystemid:19188";
 	}
-	else if( this.drm.system == "clearkey" ){
-		self.player.setProtectionData({
-			"org.w3.clearkey": { 
-				"serverURL": ""
-			}
-		});
-		callback();
+	else if(this.drm.system.indexOf("widevine")===0) {
+		msgType = "application/widevine+xml";
+		var DRMSysID = "urn:dvb:casystemid:19156";
+		var xmlLicenceAcquisition =
+		'<?xml version="1.0" encoding="utf-8"?>' +
+		'<WidevineCredentialsInfo xmlns="http://www.smarttv-alliance.org/DRM/widevine/2012/protocols/">' +
+		'<ContentURL></ContentURL>' +
+		'<DRMServerURL></DRMServerURL>' +
+		'<DeviceID></DeviceID><StreamID></StreamID><ClientIP></ClientIP>' +
+		'<DRMAckServerURL></DRMAckServerURL><DRMHeartBeatURL></DRMHeartBeatURL>' +
+		'<DRMHeartBeatPeriod></DRMHeartBeatPeriod>' +
+		'<UserData></UserData>' +
+		'<Portal></Portal><StoreFront></StoreFront>' +
+		'<BandwidthCheckURL></BandwidthCheckURL><BandwidthCheckInterval></BandwidthCheckInterval>' +
+		'</WidevineCredentialsInfo>';
 	}
-	
-	
+	else if( this.drm.system == "clearkey" ){
+		callback();
+		return;
+	}
+		
 	try {
 		this.oipfDrm.onDRMMessageResult = callback;
 	} catch (e) {
@@ -272,51 +273,67 @@ VideoPlayer.prototype.clearLicenseRequest = function(callback){
 		console.log("sendLicenseRequest Error 2: " + e.message );
 	}
 	try {
-		this.oipfDrm.sendDRMMessage(msgType, xmlLicenceAcquisition, DRMSysID);
-		console.log("drm data cleared");
+		var msgId=-1;
+		if(msgType!="")
+			msgId = this.oipfDrm.sendDRMMessage(msgType, xmlLicenceAcquisition, DRMSysID);
+		console.log( this.drm.system+" drm data cleared, msgId: " + msgId );
 	} catch (e) {
 		console.log("sendLicenseRequest Error 3: " + e.message );
+		callback();
 	}
 	
 };
 
 VideoPlayer.prototype.sendLicenseRequest = function(callback){
 	console.log("sendLicenseRequest()");
-	
-	/***
-		Create always new DRM object and container for it if it does not exist
-	***/
-	if( !$("#drm")[0] ){
-		$("body").append("<div id='drm'></div>");
-	}
-	
-	console.log("Create DRM agent");
-	$("#drm").html('<object id="oipfDrm" type="application/oipfDrmAgent" width="0" height="0"></object>');
+	createOIPFDrmAgent(); // see common.js
 	this.oipfDrm = $("#oipfDrm")[0];
+	
 	this.drm.successCallback = callback;
 	var self = this;
-	// Case Playready
-	// TODO: other DRMs
-	if( this.drm.system == "playready" ){
+	
+	// persistent-license test needs a session GUID to track laurl invocation
+	var laUrl = self.drm.la_url;
+	if(laUrl.indexOf("${GUID}")>=0) {
+		self.drm.la_url_guid = uuidv4();
+		laUrl = laUrl.replace("${GUID}", self.drm.la_url_guid);
+	} else {
+		delete self.drm.la_url_guid;
+	}
+	
+	if(this.drm.system.indexOf("playready")===0) {
 		var msgType = "application/vnd.ms-playready.initiator+xml";
+		var DRMSysID = "urn:dvb:casystemid:19219";
 		var xmlLicenceAcquisition =
 		'<?xml version="1.0" encoding="utf-8"?>' +
 		'<PlayReadyInitiator xmlns="http://schemas.microsoft.com/DRM/2007/03/protocols/">' +
 		  '<LicenseServerUriOverride>' +
 			'<LA_URL>' +
-				this.drm.la_url +
+				laUrl +
 			'</LA_URL>' +
 		  '</LicenseServerUriOverride>' +
-		'</PlayReadyInitiator>';
-		var DRMSysID = "urn:dvb:casystemid:19219";
-		
-	}
-	else if( this.drm.system == "marlin" ){
+		'</PlayReadyInitiator>';		
+	} else if( this.drm.system == "marlin" ){
 		var msgType = "application/vnd.marlin.drm.actiontoken+xml";
+		var DRMSysID = "urn:dvb:casystemid:19188";
 		var xmlLicenceAcquisition =
 		'<?xml version="1.0" encoding="utf-8"?>' +
-		'<Marlin xmlns="http://marlin-drm.com/epub"><Version>1.1</Version><RightsURL><RightsIssuer><URL>'+ this.drm.la_url +'</URL></RightsIssuer></RightsURL></Marlin>';
-		var DRMSysID = "urn:dvb:casystemid:19188";
+		'<Marlin xmlns="http://marlin-drm.com/epub"><Version>1.1</Version><RightsURL><RightsIssuer><URL>'+ laUrl +'</URL></RightsIssuer></RightsURL></Marlin>';
+	} else if(this.drm.system.indexOf("widevine")===0) {
+		var msgType = "application/widevine+xml";
+		var DRMSysID = "urn:dvb:casystemid:19156";
+		var xmlLicenceAcquisition =
+		'<?xml version="1.0" encoding="utf-8"?>' +
+		'<WidevineCredentialsInfo xmlns="http://www.smarttv-alliance.org/DRM/widevine/2012/protocols/">' +
+		'<ContentURL>' + XMLEscape(this.url) +'</ContentURL>' +
+		'<DRMServerURL>' + XMLEscape(laUrl) + '</DRMServerURL>' +
+		'<DeviceID></DeviceID><StreamID></StreamID><ClientIP></ClientIP>' +
+		'<DRMAckServerURL></DRMAckServerURL><DRMHeartBeatURL></DRMHeartBeatURL>' +
+		'<DRMHeartBeatPeriod></DRMHeartBeatPeriod>' +
+		'<UserData></UserData>' +
+		'<Portal></Portal><StoreFront></StoreFront>' +
+		'<BandwidthCheckURL></BandwidthCheckURL><BandwidthCheckInterval></BandwidthCheckInterval>' +
+		'</WidevineCredentialsInfo>';
 	}
 	
 	try {
@@ -330,14 +347,14 @@ VideoPlayer.prototype.sendLicenseRequest = function(callback){
 		console.log("sendLicenseRequest Error 2: " + e.message );
 	}
 	try {
-		this.oipfDrm.sendDRMMessage(msgType, xmlLicenceAcquisition, DRMSysID);
+		var msgId = this.oipfDrm.sendDRMMessage(msgType, xmlLicenceAcquisition, DRMSysID);
+		console.log("sendLicenseRequest msgId: " + msgId);
 	} catch (e) {
 		console.log("sendLicenseRequest Error 3: " + e.message );
 	}
 	
-	
-	
 	function drmMsgHandler(msgID, resultMsg, resultCode) {
+		console.log("drmMsgHandler drmMsgID, resultMsg, resultCode: " + msgID +","+  resultMsg +","+ resultCode);
 		showInfo("msgID, resultMsg, resultCode: " + msgID +","+  resultMsg +","+ resultCode);
 		var errorMessage = "";
 		switch (resultCode) {
@@ -364,7 +381,7 @@ VideoPlayer.prototype.sendLicenseRequest = function(callback){
 		}
 		
 		if( resultCode > 0 ){
-			showInfo( errorMessage );
+			showInfo("" + resultCode + " " + errorMessage );
 			Monitor.drmError(errorMessage);
 		}
 	}
@@ -446,16 +463,13 @@ VideoPlayer.prototype.setSubtitles = function(){
 
 
 VideoPlayer.prototype.startVideo = function( isLive ){
-	console.log("startVideo()");
-	
-	// reset progress bar always
-	this.resetProgressBar();
-	
 	var self = this;
+	console.log("startVideo(), " + self.currentItem.title);
+	
+	this.resetProgressBar(); // always reset progress bar	
 	if( isLive ){
 		self.live = true;
-	}
-	else{
+	} else{
 		self.live = false;
 	}
 	
@@ -465,44 +479,42 @@ VideoPlayer.prototype.startVideo = function( isLive ){
 			$("body").append("<object type='video/broadcast' id='broadcast'></object>");
 		}
 		broadcast = $("#broadcast")[0];
-		broadcast.bindToCurrentChannel();
-		broadcast.stop();
-		console.log("broadcast stopped");
-	}
-	catch(e){
+		console.log( "Current broadcast.playState="+ broadcast.playState );
+		if( broadcast.playState != 3 ) { // 0=unrealized, 1=connecting, 2=presenting, 3=stopped
+			broadcast.bindToCurrentChannel();
+			broadcast.stop();
+			console.log("broadcast stopped");
+		}
+	} catch(e){
 		console.log("error stopping broadcast");
 	}
 	
-	var self = this;
+	setOIPFActiveDRM(self.currentItem);
 	
 	if( this.drm && this.drm.ready == false ){
-		
+		console.log("Send DRM License acquisition");
 		this.sendLicenseRequest( function( response ){
 			console.log("license ready ", self.drm);
 			if( self.drm.ready ){
-				self.startVideo( isLive );
-			}
-			else if( self.drm.error ){
+				self.startVideo(isLive); // async 2nd call
+			} else if( self.drm.error ){
 				showInfo( "Error: " + self.drm.error );
-			}
-			else{
+			} else{
 				showInfo( "Unknown DRM error! " + JSON.stringify( response ));
 			}
 		} );
 		return;
 	}
-	
+
+	if( !self.video ){
+		self.populate();
+		self.setEventHandlers();
+	}
 	
 	try{
-		if( !self.video ){
-			self.populate();
-			self.setEventHandlers();
-		}
-		
 		var player = this.video;
 		this.subtitles = player.textTracks;
-		
-		
+				
 		if( menu.focus.subtitles ){
 			console.log("set OIPF OOB subs")
 			this.subtitles = menu.focus.subtitles;
@@ -516,22 +528,25 @@ VideoPlayer.prototype.startVideo = function( isLive ){
 			} );
 		}
 		
-		self.video.onPlayStateChange = function(){ self.doPlayStateChange(); };
-		self.element.removeClass("hidden");
-		self.visible = true;
+	} catch(e){
+		console.log("error setting subs: " + e);
+	}
 		
-		/*
-		self.video.play(1);
+	self.video.onPlayStateChange = function(){ self.doPlayStateChange(); };
+	self.element.removeClass("hidden");
+	self.visible = true;
 		
-		self.setFullscreen(true);
-		self.displayPlayer(5);
-		*/
+	/*
+	self.video.play(1);
+	
+	self.setFullscreen(true);
+	self.displayPlayer(5);
+	*/
 		
-		
+	try{
 		self.watched.load();
-		var position = this.watched.get( self.videoid );
-		console.log("position", position );
-		if( position ){
+		var position = null; //this.watched.get( self.videoid );
+		if( !self.live && position ){
 			self.resumePosition = position.position;
 			console.log("resumePosition is " + self.resumePosition);
 			self.whenstart = function(){
@@ -547,14 +562,12 @@ VideoPlayer.prototype.startVideo = function( isLive ){
 							
 						};
 						self.setFullscreen(true);
-						self.displayPlayer(5);
-						self.video.play(1);
+						self.play();
 					}
 					else{
 						console.log("video.play()")
-						self.video.play(1);
+						self.play();
 						self.setFullscreen(true);
-						self.displayPlayer(5);
 						self.resumePosition = 0;
 					}
 					
@@ -562,17 +575,20 @@ VideoPlayer.prototype.startVideo = function( isLive ){
 			};
 		}
 		
-		console.log("video.play()")
-		self.video.play();
-		self.setFullscreen(true);
-		self.displayPlayer(5);
-		
-		
+	} catch(e){
+		console.log("getting resume position: " + e.description);
 	}
-	catch(e){
-		console.log("error setting subs: " + e);
+	
+	try{
+		console.log("video.play()");
+		self.play();
+	} catch(e){
+		console.log("error start video play: " , e);
 	}
-}
+	
+	self.setFullscreen(true);
+	self.displayPlayer(5);
+};
 
 VideoPlayer.prototype.pause = function(){
 	console.log("oipf player pause");
@@ -584,7 +600,7 @@ VideoPlayer.prototype.pause = function(){
 	catch(e){
 		console.log(e);
 	}
-}
+};
 
 VideoPlayer.prototype.stop = function(){
 	showInfo("Exit Video", 1);
@@ -599,11 +615,13 @@ VideoPlayer.prototype.stop = function(){
 		console.log( "clear video succeed" );
 		self.resetProgressBar();
 		console.log( "reset progressBar succeed" );
+	} catch(ex) {
+		console.log(ex);
 	}
-	catch(e){
-		console.log(e);
-	}
-}
+	
+	if(self.currentItem.setActiveDRM_drmSystemId)
+		setOIPFActiveDRM(null);
+};
 
 VideoPlayer.prototype.play = function(){
 	var self = this;
@@ -612,16 +630,14 @@ VideoPlayer.prototype.play = function(){
 		self.displayPlayer(5);
 	}
 	catch(e){
-		console.log(e);
+		console.log("Error at VideoPlayer.play() " + e.description);
 	}
-}
+};
 
 VideoPlayer.prototype.clearVideo = function(){
-	console.log("clearing video");
 	var self = this;
 	self.element.addClass("hidden");
 	self.visible = false;
-	console.log("clearInterval(self.progressUpdateInterval)");
 	clearInterval(self.progressUpdateInterval);
 	try{
 		if(self.video){
@@ -633,30 +649,29 @@ VideoPlayer.prototype.clearVideo = function(){
 			console.log("video object stopped, removed from dom and VideoPlayerClass");
 		}
 		if( $("#broadcast")[0] ){
-			console.log("bindToCurrentChannel();");
 			$("#broadcast")[0].bindToCurrentChannel();
 		}
 	}
 	catch(e){
+		console.log("Error at clearVideo()");
 		console.log( e.description );
 	}
-	this.subtitles = null;
 	
+	this.subtitles = null;	
 	this.clearLicenseRequest( function(msg){
+		//destroyOIPFDrmAgent();
 		console.log("License cleared:" + msg);
 	});
-	
-	console.log("clearing video completed");
-}
+};
 
 VideoPlayer.prototype.isFullscreen = function(){
 	var self = this;
 	return self.fullscreen;
-}
+};
 
 VideoPlayer.prototype.isPlaying = function(){
 	return ( this.video && this.video.playState == 1 ); // return true/false
-}
+};
 
 VideoPlayer.prototype.doPlayStateChange = function(){
 	var self = this;
@@ -761,7 +776,7 @@ VideoPlayer.prototype.doPlayStateChange = function(){
             // do nothing
             break;
 	}
-}
+};
 
 VideoPlayer.prototype.getStreamComponents = function(){
 	try {
@@ -777,10 +792,9 @@ VideoPlayer.prototype.getStreamComponents = function(){
 		showInfo("Switching audio components not supported");
 	}
 	
-}
+};
 
-VideoPlayer.prototype.getAudioTracks = function(){
-	
+VideoPlayer.prototype.getAudioTracks = function(){	
 	try{
 		if(typeof this.video.getComponents == 'function') {
 			var avComponent = this.video.getComponents( this.AVCOMPONENTS.AUDIO );
@@ -791,8 +805,7 @@ VideoPlayer.prototype.getAudioTracks = function(){
 		}
 	} catch(e){
 		showInfo( "getComponents not available", e.message );
-	}
-	
+	}	
 };
 
 VideoPlayer.prototype.getCurrentAudioTrack = function(){
@@ -818,11 +831,7 @@ VideoPlayer.prototype.changeAVcomponent = function( component ) {
 	console.log("changeAVcomponent("+ component +")");
 	var self = this;
 	try{
-	
 		var track = ( component == self.AVCOMPONENTS.AUDIO? self.audioTrack : self.subtitleTrack );
-	
-	
-
 		console.log("current track: " + track  );
 		if( track == undefined || track == NaN || track === false ){
 			console.log("Change to 0"  );
@@ -879,7 +888,7 @@ VideoPlayer.prototype.changeAVcomponent = function( component ) {
 		console.log("enableSubtitles - Error: " + e.description);
 	}
 
-}
+};
 
 VideoPlayer.prototype.enableSubtitles = function( next ) {
 	console.log("enableSubtitles("+ next +")");
@@ -936,4 +945,4 @@ VideoPlayer.prototype.enableSubtitles = function( next ) {
 		console.log("enableSubtitles - Error: " + e.description);
 	}
 
-}
+};

@@ -1,13 +1,9 @@
-<?php
-	
-	date_default_timezone_set("Europe/Helsinki");
-	
+<?php	
+	date_default_timezone_set("Europe/Helsinki");	
 	error_reporting(E_ALL);
 	ini_set('display_errors', 1);
 
-
-	function getApplicationProfile(){
-		
+	function getApplicationProfile(){		
 		$profiles = json_decode( file_get_contents( "../profiles.json" ), true );
 		
 		$userAgent = $_SERVER['HTTP_USER_AGENT'];
@@ -25,7 +21,7 @@
 		else if( (int)$matches['version'] == 2 ){
 			$profile = $profiles['HbbTV1.5'];
 		}
-		else if( (int)$matches['version'] == 4 || (int)$matches['version'] == 3 || (int)$matches['version'] == 5 || (int)$matches['version'] == 6){ // 1.5.1 is hbbtv 2.0.2 / 1.4.1 = 2.0.1.1.0
+		else if( (int)$matches['version'] >= 3 ){ // 1.4.1 is hbbtv 2.0.1 / 1.3.1 = 2.0.0 and newer versions are all accepted HbbTV2.0 profile
 			$profile = $profiles['HbbTV2.0'];
 		}
 		else if( (int)$matches['version'] == 1 ){
@@ -55,13 +51,14 @@
 	header( "Content-Type: ". $profile['contentType'] .";charset=utf-8" );	
 	
 	// XML Header to start document
-	echo $profile['xmlHeader'] ."\n";
+	$val = $profile['xmlHeader'];
+	if($val!="") echo $val ."\n";
 
 	// <!DOCTYPE>
 	echo $profile['doctype'] ."\n";
 	
 ?>
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
 	<title>HbbTV Reference Video Application</title>
 
@@ -72,15 +69,12 @@
 		Settings
 	***/
 	var profile = { hbbtv : "<?php echo $profile['hbbtv']; ?>", video : "<?php echo $profile['video']; ?>", version : "<?php echo $profile['version']; ?>"};
-	
-	// change this to point to video files location. This will be used as root for relative links. Absolute urls are not affected
-	var defaultVideoRoot = "http://meridian.sofiadigital.fi/tvportal/referenceapp/videos/"; 
-	
+		
 	</script>
 	<!-- List all css and js resource files or minified and combined resource files -->
 	<?php 
 		$profileResources = $profile['version'];
-		include("resources.php"); 
+		include_once("resources.php"); 
 	?>
 	
 <script type="text/javascript">
@@ -93,15 +87,24 @@ var animating 	= false;
 var menu 		= null;
 var vplayer 	= null;
 var main 		= null;
-
+var lastError = null;
 function onLoad() {
 	registerKeys(1);
     registerKeyListener();
 	showApplication();
-    init();
+	
+	try{
+		init();
+	} catch(e){
+		lastError = e;
+		error( e );
+	}
+	
 }
 
 </script>
+
+<script onload="odd.init('sofia')" src="https://odd.dtv.fi/odd.js"></script>
 
 </head>
 <body onload="onLoad();">
@@ -109,7 +112,7 @@ function onLoad() {
 		<object id="appmgr" type="application/oipfApplicationManager"></object>
 		<object id="oipfcfg" type="application/oipfConfiguration"></object>
 	</div>
-	<div id="videodiv"></div>
+	<div id="videodiv"></div>	
 	
 	<div id="wrapper">
 		<div id="logo1"></div>
@@ -120,6 +123,6 @@ function onLoad() {
 	
 	<div id="info" class="hide"></div>
 	<div id="infoBox" class="hide"></div>
-	
+
 </body>
 </html>

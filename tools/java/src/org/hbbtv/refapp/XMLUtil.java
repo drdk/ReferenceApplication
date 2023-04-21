@@ -111,10 +111,11 @@ public class XMLUtil {
 	/**
 	 * Create XML string from dom element tree.
 	 * @param elem
+	 * @param insertXmlDeclr  insert "<?xml ...?>" header
 	 * @return
 	 * @throws Exception
 	 */
-	public static String createXML(Element elem) throws Exception {
+	public static String createXML(Element elem, boolean insertXmlDeclr) throws Exception {
 	    DOMSource source = new DOMSource(elem);
 	    StringWriter writer = new StringWriter();
 	    StreamResult result = new StreamResult(writer);
@@ -122,26 +123,76 @@ public class XMLUtil {
 	    Transformer transformer = transformerFactory.newTransformer();
 	    transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 	    //transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-	    //transformer.setOutputProperty("http://www.oracle.com/xml/is-standalone", "yes");
 	    transformer.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC,"yes");
 	    transformer.setOutputProperty("http://www.oracle.com/xml/is-standalone", "yes");
+	    if(!insertXmlDeclr) transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes"); 
 	    transformer.transform(source, result);
 	    
-	    // Java10-transformer adds unecessary empty lines, remove empty lines
+	    // Java10-transformer adds unecessary empty lines, remove empty lines, study why does it happens.
+	    // Fix few common identation bugs in mpd manifest.
 	    BufferedReader reader = new BufferedReader(new StringReader(writer.toString()));
 	    StringBuilder buf = new StringBuilder();
 	    try {
 		    String line;
+	    	//boolean wasEmptyLine=false;
 		    while( (line=reader.readLine())!=null ) {
-		    	if (!line.trim().isEmpty()) {
+		    	String linetrim = line.trim();
+		    	if (!linetrim.isEmpty()) {
+		    		if(line.startsWith("<SegmentTemplate ")) line="   "+line;
+		    		else if(line.startsWith("<ContentProtection ")) line="   "+line;
+		    		//else if(linetrim.startsWith("<AdaptationSet ") && !wasEmptyLine) line=Utils.NL+line;
+		    		else if(linetrim.startsWith("<AdaptationSet ")) line=Utils.NL+line;
 		    		buf.append(line); 
 		    		buf.append(Utils.NL);
-		    	}
+		    		//wasEmptyLine=false;
+		    	} //} else wasEmptyLine=true;
 		    }
 	    } finally {
 	    	reader.close();
 	    }
 	    return buf.toString();  //writer.toString();
 	}
+	
+	/**
+	 * XML encode string
+	 * @param s
+	 * @param useApos	usually is true
+	 * @param keepNewlines usually is false
+	 * @return
+	 */
+	public static String encode(String s, boolean useApos, boolean keepNewlines) {
+		StringBuilder str = new StringBuilder();
+		int len = (s != null ? s.length() : 0);
+		for (int i = 0; i < len; i++) {
+			char ch = s.charAt(i);
+			switch (ch) {
+			case '<': {    str.append("&lt;");     break; }
+			case '>': {    str.append("&gt;");     break; }
+			case '&': {    str.append("&amp;");    break; }
+			case '"': {    str.append("&quot;");   break; }
+			case '\'': {   
+				if (useApos) str.append("&apos;");
+				else str.append("&#39;");
+				break; }
+//            case '€': {    str.append("&#8364;"); break; }
+			case '\r':
+			case '\n':
+			case '\t':
+			case '\f': {
+				if (keepNewlines) {
+					str.append(ch);
+				} else {
+					str.append("&#");
+					str.append(Integer.toString(ch));
+					str.append(';');
+				}
+				break; }
+			default: {
+				str.append(ch);
+				}
+			}
+		}
+		return str.toString();
+	}	
 	
 }

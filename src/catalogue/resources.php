@@ -2,6 +2,7 @@
 /*** 
 	Resources and optimization
 ***/
+$isHTTPS = ( (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') || $_SERVER['SERVER_PORT'] == 443 );
 
 // use this to determine if optimization is used by default. Always can be switched by url parameter
 $optimizeDefault = false;
@@ -14,6 +15,7 @@ $resources = array(
 	"../debugscreen.css",
 	"../jquery-1.11.3.min.js",
 	"../common.js",
+	"../common2.js",	
 	"../dialog.js",
 	"../dialog.css",
 	"application.js",
@@ -25,18 +27,24 @@ $resources = array(
 	"topmenu.js",
 	"topmenuitem.js",
 	"../debugscreen.js",
+	"../log.js",
 	"../keycodes.js",
 	"navigation.js", 
-	"../videoplayer/videoplayer_basic.js",
-	"../videoplayer/monitor/monitor-base.js", /* Monitor interface is and must be included and present */
-	"../videoplayer/monitor/monitor.js" /* Monitor implementation is not included to reference application */
+	"../videoplayer/videoplayer_basic.js"
+	,"../videoplayer/monitor/monitor-base.js" // Monitor interface is and must be included and present
+	//,"../videoplayer/monitor/monitor.js" // Monitor implementation is not included to reference application
 );
 
 if( isset( $profileResources ) ){
 	echo "<!-- " . $profileResources. " -->\n";
-	if( $profileResources == "mse-eme" ){
-		$resources[] = "../videoplayer/dash.all.min.js";
-		//$resources[] = "https://cdn.dashjs.org/latest/dash.all.min.js";
+	if( $profileResources == "mse-eme" ){		
+		$dashjs = isset($_GET["dashjs"]) ? $_GET["dashjs"] : "";
+		if($dashjs=="local")
+			$resources[] = "../videoplayer/dash.all.min.js";
+		else if($dashjs=="nightly")
+			$resources[] = ($isHTTPS?"https:":"http:")."//reference.dashif.org/dash.js/nightly/dist/dash.all.debug.js";
+		else if($dashjs=="" || $dashjs=="latest")
+			$resources[] = ($isHTTPS?"https:":"http:")."//cdn.dashjs.org/latest/dash.all.min.js";
 		$resources[] = "../videoplayer/videoplayer_mse-eme.js";
 	}
 	else if( $profileResources == "html5" ){
@@ -77,9 +85,10 @@ else{
 
 if( !$useMinified || !$useMinifiedCss ){
 	foreach($resources as $file){
-		$fileversion = $file;
+		$fileversion = $file;		
 		if( substr( $file, 0,4 ) != "http" ){
-			$fileversion = $file . "?version=" . filemtime( $file );
+			if(file_exists($file))
+				$fileversion = $file . "?version=" . filemtime( $file );
 		}
 		
 		if( !$useMinified && substr( $file, -2 ) == "js" ){

@@ -34,10 +34,10 @@ public class DashManifest {
 
 	/**
 	 * Fix manifest formatting issues.
-	 * @param mode	h264,h265
+	 * @param gopdur    GOP(sec) is needed for MDP.minBufferTime
 	 * @throws Exception
 	 */
-	public void fixContent(StreamSpec.TYPE mode) throws Exception {
+	public void fixContent() throws Exception {
 		modified=false;
 		String val;
 
@@ -76,8 +76,9 @@ public class DashManifest {
 		elem = XMLUtil.getChildElement(doc.getDocumentElement(), "Period");
 		for(Element elemAS : XMLUtil.getChildElements(elem, "AdaptationSet")) {
 			elem = XMLUtil.getChildElement(elemAS, "SegmentTemplate");
+			if(elem==null) continue;
 			val = elem.getAttribute("media");
-			if (val.contains("$Time$")) {
+			if (val.contains("$Number$") && val.contains("$Time$")) {
 				modified=true;
 				elem.setAttribute("media", val.replace("$Time$","") );
 			}
@@ -130,8 +131,28 @@ public class DashManifest {
 			}
 		}
 		
-		// Add Role=main to first audio adaptationset (TODO: what to put additional audios?, video?)
-		elem = XMLUtil.getChildElement(doc.getDocumentElement(), "Period");
+		//TODO: insert h264,h265 AdaptationSet prop
+		// <SupplementalProperty schemeIdUri="urn:mpeg:dash:adaptation-set-switching:2016" value="1"/>
+		
+		// remove tuple Role=main,alternate (mp4box bug?)
+		for(Element elemAS : XMLUtil.getChildElements(elem, "AdaptationSet")) {
+			Set<String> roles = new HashSet<String>(4);
+			List<Element> elems = XMLUtil.getChildElements(elemAS, "Role");
+			for(idx=elems.size()-1; idx>=0; idx--) {
+				elem = elems.get(idx);
+				val=elem.getAttribute("schemeIdUri")+elem.getAttribute("value");
+				if(roles.contains(val)) {
+					elems.remove(idx);
+					elem.getParentNode().removeChild(elem);
+				} else {
+					roles.add(val);
+				}
+			}
+		}
+		
+		// Add Role=main,alternate inside AdaptationSet elements
+		/* elem = XMLUtil.getChildElement(doc.getDocumentElement(), "Period");		
+		int countA=0, countV=0;
 		for(Element elemAS : XMLUtil.getChildElements(elem, "AdaptationSet")) {
 			elem = XMLUtil.getChildElement(elemAS, "Role");
 			if (elem!=null) continue;
@@ -141,22 +162,40 @@ public class DashManifest {
 			if (mime.isEmpty()) mime = elemAS.getAttribute("mimeType");
 			if (mime.startsWith("audio/")) {
 				modified=true;
-				String xml="<Role schemeIdUri=\"urn:mpeg:dash:role:2011\" value=\"main\"/>";
+				String xml= String.format("<Role schemeIdUri=\"urn:mpeg:dash:role:2011\" value=\"%s\"/>"
+					, (countA==0?"main":"alternate"));
 				Element newElem = XMLUtil.createDocument(xml).getDocumentElement();
 				elem = XMLUtil.getChildElement(elemAS, "SegmentTemplate");
 				elemAS.insertBefore( doc.importNode(newElem, true), elem);
-				break;
+				countA++;
+			} else if (mime.startsWith("video/")) {
+				modified=true;
+				String xml= String.format("<Role schemeIdUri=\"urn:mpeg:dash:role:2011\" value=\"%s\"/>"
+					, (countV==0?"main":"alternate"));
+				Element newElem = XMLUtil.createDocument(xml).getDocumentElement();
+				elem = XMLUtil.getChildElement(elemAS, "SegmentTemplate");
+				elemAS.insertBefore( doc.importNode(newElem, true), elem);
+				countV++;
 			}
-		}
+		} */
 		
+		// see also MediaTools.getDashArgs(), -min-buffer=(gopdur*1000*2) millis, MDP@minBufferTime="PT4S" secs		
+		/*if(gopdur>0) {
+			int time = gopdur/1000; //gopdur*2;
+			val = doc.getDocumentElement().getAttribute("minBufferTime");
+			if(!val.contains("PT"+time+"S"))
+				doc.getDocumentElement().setAttribute("minBufferTime", "PT"+time+"S");
+		}*/
 	}
 	
 	public void addNamespaces() {
 		String[] values = new String[] {
-				"xmlns:cenc", "urn:mpeg:cenc:2013",
-				"xmlns:mspr", "urn:microsoft:playready",
-				"xmlns:mas",  "urn:marlin:mas:1-0:services:schemas:mpd",
-				"xmlns:ck",   "http://dashif.org/guidelines/clearKey"
+				"xmlns:cenc",  "urn:mpeg:cenc:2013",
+				"xmlns:mspr",  "urn:microsoft:playready",
+				"xmlns:mas",   "urn:marlin:mas:1-0:services:schemas:mpd",
+				"xmlns:ck",    "http://dashif.org/guidelines/clearKey", // legacy clearkey
+				"xmlns:dashif","https://dashif.org/", // new clearkey
+				"xmlns:xlink", "http://www.w3.org/1999/xlink" // Period XLINK injection
 		};
 		
 		Element elem = doc.getDocumentElement();
@@ -179,16 +218,24 @@ public class DashManifest {
 			profile="urn:mpeg:dash:profile:isoff-live:2011,urn:dvb:dash:profile:dvb-dash:2014,urn:hbbtv:dash:profile:isoff-live:2012";
 		else if ("dvb2014".equalsIgnoreCase(profile)) // DVB (new)
 			profile="urn:dvb:dash:profile:dvb-dash:2014,urn:dvb:dash:profile:dvb-dash:isoff-ext-live:2014";
+		else if (profile.isEmpty() || profile.equals("keep")) return; // keep the original value
 		doc.getDocumentElement().setAttribute("profiles", profile);
 	}
 
-	public void addContentProtectionElement(String xml) {
+	/**
+	 * @param asType AdaptationSet "video","audio" or empty string to put inside all AS elements
+	 * @param xml
+	 */
+	public void addContentProtectionElement(String asType, String xml) {
 		// add CP element after existing ContentProtection elements
+		if(xml.isEmpty()) return;
 		Element newElem = XMLUtil.createDocument(xml).getDocumentElement();
-		modified=true;
 
 		Element elem = XMLUtil.getChildElement(doc.getDocumentElement(), "Period");
 		for(Element elemAS : XMLUtil.getChildElements(elem, "AdaptationSet")) {
+			if(!asType.isEmpty() && !elemAS.getAttribute("contentType").equals(asType))
+				continue;
+			modified=true;			
 			List<Element> elems = XMLUtil.getChildElements(elemAS, "ContentProtection");
 			if (elems.isEmpty()) {
 				elem = XMLUtil.getChildElement(elemAS, "SegmentTemplate");
@@ -200,19 +247,21 @@ public class DashManifest {
 		}
 	}
 	
-	public void removeContentProtectionElement(String drmName) {
+	public void removeContentProtectionElement(String asType, String drmName) {
 		// remove <ContentProtection> element by schemeIdUri value
 		String tag;
-		if (drmName.equals("cenc")) 			tag="urn:mpeg:dash:mp4protection:2011";
-		else if (drmName.equals("playready")) 	tag="urn:uuid:"+DashDRM.GUID_PLAYREADY;
-		else if (drmName.equals("widevine")) 	tag="urn:uuid:"+DashDRM.GUID_WIDEVINE;
-		else if (drmName.equals("marlin")) 		tag="urn:uuid:"+DashDRM.GUID_MARLIN;
-		else if (drmName.equals("clearkey") || drmName.equals("emecenc") ) 	
-												tag="urn:uuid:"+DashDRM.GUID_CENC;
+		if (drmName.equals(DashDRM.CENC.NAME)) 			 tag="urn:mpeg:dash:mp4protection:2011";
+		else if (drmName.equals(DashDRM.PLAYREADY.NAME)) tag="urn:uuid:"+DashDRM.PLAYREADY.GUID;
+		else if (drmName.equals(DashDRM.WIDEVINE.NAME))  tag="urn:uuid:"+DashDRM.WIDEVINE.GUID;
+		else if (drmName.equals(DashDRM.MARLIN.NAME))    tag="urn:uuid:"+DashDRM.MARLIN.GUID;
+		else if (drmName.equals(DashDRM.CLEARKEY.NAME))  tag="urn:uuid:"+DashDRM.CLEARKEY.GUID;
+		else if (drmName.equals("clearkeycenc"))         tag="urn:uuid:"+DashDRM.CENC.GUID; // legacy clearkey element
 		else return;
 		
 		Element elem = XMLUtil.getChildElement(doc.getDocumentElement(), "Period");
 		for(Element elemAS : XMLUtil.getChildElements(elem, "AdaptationSet")) {
+			if(!asType.isEmpty() && !elemAS.getAttribute("contentType").equals(asType))
+				continue;
 			for(Element elemCP : XMLUtil.getChildElements(elemAS, "ContentProtection")) {
 				if (tag.equalsIgnoreCase(elemCP.getAttribute("schemeIdUri"))) {
 					modified=true;
@@ -231,7 +280,7 @@ public class DashManifest {
 	public void addInbandEventStreamElement(String scheme, String value, String mimeAS) {
 		// add IES element before <Representation..> element within video or audio AdaptationSet
 		String xml = String.format("<InbandEventStream schemeIdUri=\"%s\" value=\"%s\"/>"
-				, Utils.XMLEncode(scheme, true, false), Utils.XMLEncode(value, true, false) );				
+				, XMLUtil.encode(scheme, true, false), XMLUtil.encode(value, true, false) );				
 		Element newElem = XMLUtil.createDocument(xml).getDocumentElement();
 
 		Element elem = XMLUtil.getChildElement(doc.getDocumentElement(), "Period");
@@ -261,6 +310,79 @@ public class DashManifest {
 	}
 	
 	/**
+	 * Remove representations
+	 * @param id      Representation@id value, one or more comma(,) or "*" to drop AdaptationSet
+	 * @param mimeAS  "video", "audio" or use empty to read any AdaptationSet
+	 * @param langAS  "eng,fin" or "*" languages to match
+	 * @param maxHeight maxHeight of video representation to keep or -1 to skip this filter
+	 * @return
+	 */
+	public int removeRepresentation(String id, String mimeAS, String langAS
+			, int maxHeight) {
+		int count=0;
+		if(mimeAS.isEmpty()) mimeAS="*";
+		if(langAS.isEmpty()) langAS="*";
+		for(Element elemP : XMLUtil.getChildElements(doc.getDocumentElement(), "Period")) {
+			for(Element elemAS : XMLUtil.getChildElements(elemP, "AdaptationSet")) {
+				if(!langAS.equals("*")) {
+					String[] tokens = langAS.split("\\s*,\\s*"); // split "fin,swe", skip tuple whitespaces					
+					if(Utils.indexOfArray(tokens, elemAS.getAttribute("lang"))<0)
+						continue;
+				}
+
+				List<Element> elems = XMLUtil.getChildElements(elemAS, "Representation");
+
+				String[] tokens = mimeAS.split("\\s*,\\s*"); // split "video,audio,text"					
+				String mime=elemAS.getAttribute("contentType");
+				if(mime.isEmpty()) {
+					mime = !elems.isEmpty() ? elems.get(0).getAttribute("mimeType") : "unknown/xx"; // "video/mp4", "audio/mp4"
+					mime = mime.substring(0, mime.indexOf('/'));
+				}
+				if(!mimeAS.equals("*")) {
+					if(Utils.indexOfArray(tokens, mime)<0)
+						continue;
+				}
+				boolean isVideo = mime.startsWith("video");
+				
+				// drop 1..n Representation
+				tokens = id.split("\\s*,\\s*"); // split "v1,v2", skip tuple whitespaces
+				boolean wasModified=false;
+				for(int idx=elems.size()-1; idx>=0; idx--) {
+					Element elem = elems.get(idx);
+					if(tokens[0].equals("*") || Utils.indexOfArray(tokens, elem.getAttribute("id"))>=0) {
+						int h = isVideo ? Integer.parseInt(elems.get(idx).getAttribute("height")) : -1;						
+						if(!isVideo || (maxHeight<0 || h>maxHeight) ) { 						
+							wasModified=true;
+							elem.getParentNode().removeChild(elem);
+							elems.remove(idx);
+							count++;
+						}
+					}
+				}
+				if(wasModified) {
+					modified=true;
+					if(elems.isEmpty()) {
+						// no representations left, drop AdaptationSet
+						elemAS.getParentNode().removeChild(elemAS);
+					} else if(isVideo) {
+						int maxw=-1, maxh=-1;
+						for(int idx=elems.size()-1; idx>=0; idx--) {
+							int w = Integer.parseInt(elems.get(idx).getAttribute("width"));
+							int h = Integer.parseInt(elems.get(idx).getAttribute("height"));
+							if(w>maxw) maxw=w;
+							if(h>maxh) maxh=h;
+						}
+						if(maxw>-1) elemAS.setAttribute("maxWidth", ""+maxw);
+						if(maxh>-1) elemAS.setAttribute("maxHeight", ""+maxh);
+					}
+				}
+			} // loop-elemAS
+		}
+		return count;
+	}
+	
+	
+	/**
 	 * Save manifest.mpd if content was modified.
 	 * @param outputFile
 	 * @param forceSave
@@ -282,7 +404,7 @@ public class DashManifest {
 	 */
 	public String toString() {
 		try {
-			return XMLUtil.createXML(doc.getDocumentElement());
+			return XMLUtil.createXML(doc.getDocumentElement(), true);
 		} catch(Exception ex) {
 			if (ex instanceof IllegalArgumentException) throw (IllegalArgumentException)ex;
 			else throw new IllegalArgumentException(ex);
