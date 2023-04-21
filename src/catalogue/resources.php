@@ -2,7 +2,8 @@
 /*** 
 	Resources and optimization
 ***/
-$isHTTPS = ( (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') || $_SERVER['SERVER_PORT'] == 443 );
+$isHTTPS = true;
+//( (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') || $_SERVER['SERVER_PORT'] == 443 );
 
 // use this to determine if optimization is used by default. Always can be switched by url parameter
 $optimizeDefault = false;
