@@ -36,9 +36,20 @@ VideoPlayerEME.prototype.createPlayer = function(){
 	}
 
 	try{
-		this.video = $("<video id='video' style='width:100%'></video>")[0]; // data-dashjs-player
-		this.element.appendChild( this.video );
-		$("<div id='video-caption'></div>").insertAfter("#video"); // put TTML subtitles div after a video element
+		// reuse dashjs elements to avoid internal errors from dashjs_textrack if elements were recreated each time.
+		if($("#video").length<1) {
+			this.video = $("<video id='video' style='width:100%'></video>")[0]; // data-dashjs-player		
+			this.element.appendChild(this.video);
+		} else {
+			this.video = $("#video")[0];
+		}		
+		if($("#video-caption").length<1)
+			$("<div id='video-caption'></div>").insertAfter("#video"); // put TTML subtitles div after a video element
+
+		//this.video = $("<video id='video' style='width:100%'></video>")[0]; // data-dashjs-player		
+		//this.element.appendChild( this.video );
+		//$("<div id='video-caption'></div>").insertAfter("#video"); // put TTML subtitles div after a video element		
+		
 		this.player = dashjs.MediaPlayer().create();
 		this.player.initialize();
 		this.player.setAutoPlay(true); // this fixes some slow-to-start live test manifests
@@ -114,7 +125,7 @@ VideoPlayerEME.prototype.createPlayer = function(){
 	} );
 	
 	player.addEventListener('loadedmetadata', function(){
-		console.log("loadedmetadata");
+		//console.log("loadedmetadata");
 	} );
 	
 	player.addEventListener('loadstart', function(){
@@ -157,11 +168,11 @@ VideoPlayerEME.prototype.createPlayer = function(){
 	var SCHEME_ID_URI = "http://hbbtv.org/refapp";
 	var fnEvent = function(evt) {
 		var cueValue = uint8ArrayToString(evt.event.messageData);
-		var info = "presentationTime="+evt.event.calculatedPresentationTime + ", duration="+evt.event.duration;
+		var info = "startTime="+evt.event.calculatedPresentationTime + ", duration="+evt.event.duration;
 		info    += ", "+evt.event.eventStream.schemeIdUri + ", "+ evt.event.eventStream.value;
 		info    += ", id="+evt.event.id+", " + cueValue;
 		console.log("EVENT.START "+info);
-		info =  "cue: '" + cueValue + "' start: " + evt.event.calculatedPresentationTime 
+		info =  "'" + cueValue + "' start: " + evt.event.calculatedPresentationTime 
 			+ ", ends: " + (evt.event.calculatedPresentationTime+evt.event.duration) + "<br/>";
 		showInfo(info, evt.event.duration);
 	};
@@ -352,7 +363,6 @@ VideoPlayerEME.prototype.createPlayer = function(){
 VideoPlayerEME.prototype.setURL = function(url){
 	url = url.replace("${GUID}", uuidv4());
 	console.log("setURL(",url,")");
-	//this.player.attachTTMLRenderingDiv(document.getElementById("video-caption")); //$("#video-caption")[0]);
 	
 	if(this.adBreaks) this.player.setAutoPlay(false); // disable autoplay, play preroll before starting a video
 	this.player.attachSource(url);
@@ -666,6 +676,21 @@ VideoPlayerEME.prototype.startVideo = function( isLive ){
 	}
 	
 	try{
+		var broadcast = $("#broadcast")[0];
+		if( !broadcast )
+			$("body").append("<object type='video/broadcast' id='broadcast'></object>");
+		broadcast = $("#broadcast")[0];
+		console.log("Current broadcast.playState="+ broadcast.playState);
+		if( broadcast.playState != 3 ) { // 0=unrealized, 1=connecting, 2=presenting, 3=stopped
+			broadcast.bindToCurrentChannel();
+			broadcast.stop();
+			console.log("broadcast stopped");
+		}
+	} catch(e){
+		console.log("error on broadcast object, this browser does not support it");
+	}
+	
+	try{
 		if( !self.video ){
 			console.log("populate player and create video object");
 			self.populate();
@@ -752,9 +777,8 @@ VideoPlayerEME.prototype.startVideo = function( isLive ){
 VideoPlayerEME.prototype.stop = function(){
 	var self = this;
 	
-	self.watched.save();
-	
-	showInfo("Exit Video", 1);
+	self.watched.save();	
+	//showInfo("Exit Video", 1);
 
 	this.onAdBreak = false;
 	// if video not exist
@@ -768,8 +792,7 @@ VideoPlayerEME.prototype.stop = function(){
 		self.clearVideo();
 		console.log("clearVideo(); succeed");
 		self.resetProgressBar();
-	}
-	catch(e){
+	} catch(e){
 		console.log("error stopping video");
 		console.log(e.description);
 	}
@@ -796,12 +819,18 @@ VideoPlayerEME.prototype.clearVideo = function(){
 	try{
 		if(self.video){
 			self.video.pause();
-			//self.video.src = ""; // must not clear a field value or dashjs gets an infinite error loop
+			//self.video.src = ""; // must not clear a value or dashjs infinite error loop
 			self.player.attachSource(null); // source+buffer teardown, keep settings
-			$("#video").remove(); // clear from dom
-			$("#video-caption").remove();
 			self.player.destroy(); // destroy an instance
+			//$("#video").remove(); // clear from dom(note: do not remove elements, reuse to avoid dashjs texttrack errors)
+			//$("#video-caption").remove();
 			this.video = null;
+		}
+		try {
+			if($("#broadcast")[0])
+				$("#broadcast")[0].bindToCurrentChannel();
+		} catch(e){
+			console.log("error on broadcast object, this browser does not support it");
 		}
 	} catch(e){
 		console.log("Error at clearVideo()");
@@ -845,6 +874,10 @@ VideoPlayerEME.prototype.isPlaying = function(){
 	return ( this.video && !this.video.paused ); // return true/false
 };
 
+//VideoPlayerEME.prototype.getTracksFor = function(strType) {
+//	return this.player.getTracksFor(strType); // audio, text
+//}
+
 VideoPlayerEME.prototype.getAudioTracks = function(){
 	try {
 		var tracks=this.player.getTracksFor("audio");
@@ -863,3 +896,28 @@ VideoPlayerEME.prototype.getCurrentAudioTrack = function(){
 	}
 };
 
+VideoPlayerEME.prototype.setTextTrack = function(idx){
+	var count = this.getTextTracks();
+	if(idx>=count) idx=-1; // disable track
+	this.player.setTextTrack(idx); // dashjsPlayer object
+}
+
+VideoPlayerEME.prototype.getTextTracks = function(){
+	try {
+		var tracks=this.player.getTracksFor("text");
+		return tracks.length;
+	} catch(e){
+		showInfo( "getComponents not available", e.message );
+	}
+};
+
+VideoPlayerEME.prototype.getCurrentTextTrack = function(){
+	try {		
+		var idx=this.player.getCurrentTextTrackIndex();
+		if(idx<0) return "undefined";
+		var track=this.player.getCurrentTrackFor("text");
+		return track.lang;
+	} catch(e){
+		return "undefined";
+	}
+};
