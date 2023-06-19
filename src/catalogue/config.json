@@ -791,6 +791,13 @@
                     "img": "icons/icons_1x1_1080p.png",
                     "app": 6,
                     "desc": "Kenneth er sød "
+                },
+                {
+                    "title": "arib_std-b72 HDR test",
+                    "url": "https://drodtest01a.akamaized.net/all/clear/none/e6/6490056ee910e0297821fbe6/bben-23-06-19_09-36/stream_fmp4/master_manifest.mpd",
+                    "img": "icons/icons_1x1_1080p.png",
+                    "app": 6,
+                    "desc": "colorbar test with multiple HDR sets"
                 }
             ]
         }
