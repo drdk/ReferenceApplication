@@ -772,11 +772,11 @@
                     "desc": "Link to http://www.arte.tv/redbutton/index.html"
                 },
                 {
-                    "title": "Ales D3 HbbTV",
-                    "eval": "location.href='https://rippl.cz/streams'",
+                    "title": "SVT encrypted asset",
+                    "eval": "location.href='https://stage.hbbtv.play.svt.se/v2/index.xhtml'",
                     "img": "icons/icons_1x1_funny.png",
                     "app": 0,
-                    "desc": "Link to https://rippl.cz/streams"
+                    "desc": "Link to https://stage.hbbtv.play.svt.se/v2/index.xhtml"
                 },
                 {
                     "title": "ZDF HbbTV",
