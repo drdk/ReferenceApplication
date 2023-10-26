@@ -745,10 +745,10 @@
                 },     
                 {
                     "title": "SCS-clearkey asset",
-                    "eval": "https://drshield.code4media.com:9201/drm/spise_test_clear/dash.mpd'",
+                    "url": "https://drshield.code4media.com:9201/drm/spise_test_clear/dash.mpd'",
                     "img": "icons/icons_1x1_livestream.png",
                     "app": 6,
-                    "desc": "DR1 Clearkey CENC",
+                    "desc": "SCS clearkey",
                     "live": true
                 }, 
                 {
