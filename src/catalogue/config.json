@@ -744,11 +744,12 @@
                     "live": true
                 },     
                 {
-                    "title": "james",
-                    "eval": "location.href='../james.html'",
-                    "img": "icons/icons_1x1_funny.png",
-                    "app": 0,
-                    "desc": "Link to james.html"
+                    "title": "SCS-clearkey asset",
+                    "eval": "https://drshield.code4media.com:9201/drm/spise_test_clear/dash.mpd'",
+                    "img": "icons/icons_1x1_livestream.png",
+                    "app": 6,
+                    "desc": "DR1 Clearkey CENC",
+                    "live": true
                 }, 
                 {
                     "title": "Akamai HbbTV",
