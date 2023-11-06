@@ -744,11 +744,11 @@
                     "live": true
                 },     
                 {
-                    "title": "SCS-clearkey asset",
-                    "url": "https://drshield.code4media.com:9201/drm/spise_test_clear/dash.mpd'",
-                    "img": "icons/icons_1x1_livestream.png",
+                    "title": "scalstrm-clearkey asset",
+                    "url": "https://drshield.code4media.com:9201/drm/spise_test_clear/dash.mpd",
+                    "img": "icons/icons_1x1_1080p.png",
                     "app": 6,
-                    "desc": "SCS clearkey",
+                    "desc": "scalstrm",
                     "live": true
                 }, 
                 {
