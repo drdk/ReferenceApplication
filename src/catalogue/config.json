@@ -760,10 +760,10 @@
                 },
                 {
                     "title": "SVT HbbTV",
-                    "eval": "location.href='https://hbbtv.play.svt.se/v2/index.html#/hidden/entrance/entrance'",
+                    "eval": "location.href='https://smarttv-static.app.borealis.svt.se/client-int/hack-akamai-test/index.xhtml'",
                     "img": "icons/icons_1x1_funny.png",
                     "app": 0,
-                    "desc": "Link to https://hbbtv.play.svt.se/v2/index.html#/hidden/entrance/entrance"
+                    "desc": "Link to https://smarttv-static.app.borealis.svt.se/client-int/hack-akamai-test/index.xhtml"
                 },
                 {
                     "title": "ARTE HbbTV",
