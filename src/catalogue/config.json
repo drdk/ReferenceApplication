@@ -752,11 +752,11 @@
                     "live": true
                 }, 
                 {
-                    "title": "Akamai HbbTV",
-                    "eval": "location.href='https://hbbtvplayer.akamaized.net/production/catalogue'",
-                    "img": "icons/icons_1x1_funny.png",
-                    "app": 0,
-                    "desc": "Link to https://hbbtvplayer.akamaized.net/production/catalogue"
+                    "title": "Ateme DASH Live",
+                    "eval": "location.href='https://drstreaming01dash.akamaized.net/dash/live/2109485/atemedash01/manifest.mpd'",
+                    "img": "icons/icons_1x1_livestream.png",
+                    "app": 6,
+                    "desc": "Ateme DASH LIVE"
                 },
                 {
                     "title": "SVT HbbTV DR asset",
