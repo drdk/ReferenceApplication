@@ -682,11 +682,11 @@
                     "live": true
                 }, 
                 {
-                    "title": "Ateme DASH Live DRTV1",
-                    "url": "https://drstreaming01dash.akamaized.net/dash/live/2109485/drtv1/manifest.mpd",
+                    "title": "Ateme DASH Live DRTV1 LL",
+                    "url": "https://drstreaming01dash.akamaized.net/dash/live/2109485/ll/manifest.mpd",
                     "img": "icons/icons_1x1_livestream.png",
                     "app": 6,
-                    "desc": "Ateme DASH DRTV1",
+                    "desc": "Ateme DASH DRTV1 LL",
 		    "live": true
                 },
                 {
