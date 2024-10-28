@@ -697,6 +697,14 @@
                     "desc": "Ateme DASH DRTV1 aac",
 		    "live": true
                 },
+		{
+                    "title": "DRTV D",
+                    "url": "https://drtvdeventdash.akamaized.net/dash/live/2024977/drtvd/manifest.mpd",
+                    "img": "icons/icons_1x1_livestream.png",
+                    "app": 6,
+                    "desc": "DRTV D",
+		    "live": true
+                },
                 {
                     "title": "SVT HbbTV DR asset",
                     "eval": "location.href='https://smarttv-static.app.borealis.svt.se/client-int/hack-akamai-test/index.xhtml'",
