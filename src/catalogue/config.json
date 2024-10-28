@@ -682,7 +682,7 @@
                     "live": true
                 }, 
                 {
-                    "title": "Ateme DASH Live DRTV1 AC3 2.0",
+                    "title": "Ateme DASH Live DRTV1 LL AAC",
                     "url": "https://drstreaming01dash.akamaized.net/dash/live/2109485/ll/manifest.mpd",
                     "img": "icons/icons_1x1_livestream.png",
                     "app": 6,
@@ -690,15 +690,7 @@
 		    "live": true
                 },
 		{
-                    "title": "Ateme DASH Live DRTV1 AAC",
-                    "url": "https://drstreaming01dash.akamaized.net/dash/live/2109485/281024/manifest.mpd",
-                    "img": "icons/icons_1x1_livestream.png",
-                    "app": 6,
-                    "desc": "Ateme DASH DRTV1 aac",
-		    "live": true
-                },
-		{
-                    "title": "DRTV D",
+                    "title": "DRTV D prod",
                     "url": "https://drtvdeventdash.akamaized.net/dash/live/2024977/drtvd/manifest.mpd",
                     "img": "icons/icons_1x1_livestream.png",
                     "app": 6,
