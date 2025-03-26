@@ -666,11 +666,11 @@
                     "desc": "CENC no la php"
                 },
                 {
-                    "title": "DR1 DASH Elemental",
-                    "url": "https://drlive01dash.akamaized.net/dash/live/2014192/drlive01/manifest.mpd",
+                    "title": "DR1 DASH sub test",
+                    "url": "https://drstreaming01dash.akamaized.net/dash/live/2109485/dr1_ekstratest/manifest.mpd",
                     "img": "icons/icons_1x1_livestream.png",
                     "app": 6,
-                    "desc": "DR1 DASH Elemental",
+                    "desc": "DR1 DASH sub test",
                     "live": true
                 },     
                 {
