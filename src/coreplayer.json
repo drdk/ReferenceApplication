@@ -1,0 +1,14 @@
+[
+    {
+        "display_title": "asset 1 HLS stream",
+        "manifest_url": "https://drod24k.akamaized.net/all/clear/none/24/67f63186b44cb335281b3e24/00572125010/stream_fmp4/master_manifest.m3u8"
+    },
+    {
+        "display_title": "asset 1 DASH stream",
+        "manifest_url": "https://drod24k.akamaized.net/all/clear/none/24/67f63186b44cb335281b3e24/00572125010/stream_fmp4/master_manifest.mpd"
+    },
+    {
+        "display_title": "asset 2 HLS stream",
+        "manifest_url": "https://drod22h.akamaized.net/all/clear/none/40/67e5bc3b8026ef379879a940/00212511010/stream_fmp4/master_manifest.m3u8"
+    }
+]
