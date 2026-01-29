@@ -689,11 +689,11 @@
 		    "live": true
                 },
 		{
-                    "title": "RBM lab encoder",
-                    "url": "https://drtestdash.akamaized.net/dash/live/2014203/drtest/manifest.mpd",
+                    "title": "2025 Cert test",
+                    "url": "https://drtveeventdash.akamaized-staging.net/dash/live/2024979/drtve/manifest.mpd",
                     "img": "icons/icons_1x1_livestream.png",
                     "app": 6,
-                    "desc": "https://drtestdash.akamaized.net/dash/live/2014203/drtest/manifest.mpd",
+                    "desc": "https://drtveeventdash.akamaized-staging.net/dash/live/2024979/drtve/manifest.mpd",
 		    "live": true
                 },
 		{
@@ -773,3 +773,4 @@
     ],
     "icondelay": "10"
 }
+
