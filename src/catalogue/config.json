@@ -667,7 +667,7 @@
                 },
                 {
                     "title": "DR1 DASH sub test",
-                    "url": "https://drstreaming01dash.akamaized.net/dash/live/2109485/dr1_ekstratest/manifest.mpd",
+                    "url": "https://drstreaming01dash.akamaized.net/dash/live/2109485/subtest/manifest.mpd",
                     "img": "icons/icons_1x1_livestream.png",
                     "app": 6,
                     "desc": "DR1 DASH sub test",
@@ -773,5 +773,6 @@
     ],
     "icondelay": "10"
 }
+
 
 
