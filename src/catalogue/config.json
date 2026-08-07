@@ -689,19 +689,19 @@
 		    "live": true
                 },
 		{
-                    "title": "2025 Cert test",
-                    "url": "https://drtveeventdash.akamaized-staging.net/dash/live/2024979/drtve/manifest.mpd",
+                    "title": "2025 MSL5 encrupted test",
+                    "url": "https://drevent01dash.akamaized.net/dash/live/2014200/tva_msl5_encrypted/manifest.mpd",
                     "img": "icons/icons_1x1_livestream.png",
                     "app": 6,
-                    "desc": "https://drtveeventdash.akamaized-staging.net/dash/live/2024979/drtve/manifest.mpd",
+                    "desc": "https://drevent01dash.akamaized.net/dash/live/2014200/tva_msl5_encrypted/manifest.mpd",
 		    "live": true
                 },
 		{
-                    "title": "DR TVD",
-                    "url": "https://drtvdeventdash.akamaized.net/dash/live/2024977/drtvd/manifest.mpd",
+                    "title": "GC test CDN",
+                    "url": "https://cdn0-70600-liveshield0.dna.contentdelivery.net/70600-liveshield0/live1/manifest.mpd?wnd=18",
                     "img": "icons/icons_1x1_livestream.png",
                     "app": 6,
-                    "desc": "https://drtvdeventdash.akamaized.net/dash/live/2024977/drtvd/manifest.mpd",
+                    "desc": "https://cdn0-70600-liveshield0.dna.contentdelivery.net/70600-liveshield0/live1/manifest.mpd?wnd=18",
 		    "live": true
                 },
                 {
