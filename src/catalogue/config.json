@@ -681,15 +681,15 @@
                     "desc": "https://dash.akamaized.net/akamai/bbb_30fps/bbb_with_multiple_tiled_thumbnails.mpd"
                 }, 
                 {
-                    "title": "RBM Ateme Ramasjang",
-                    "url": "https://drlivedrrdash.akamaized.net/dash/live/2113627/drlivedrr/manifest.mpd",
+                    "title": 2026 MSL5 TVA test",
+                    "url": "https://drevent01dash.akamaized.net/dash/live/2014200/tva_msl5/manifest.mpd",
                     "img": "icons/icons_1x1_livestream.png",
                     "app": 6,
-                    "desc": "RBM Ateme Ramasjang",
+                    "desc": "https://drevent01dash.akamaized.net/dash/live/2014200/tva_msl5/manifest.mpd",
 		    "live": true
                 },
 		{
-                    "title": "2025 MSL5 encrupted test",
+                    "title": "2026 MSL5 TVA enc. test",
                     "url": "https://drevent01dash.akamaized.net/dash/live/2014200/tva_msl5_encrypted/manifest.mpd",
                     "img": "icons/icons_1x1_livestream.png",
                     "app": 6,
