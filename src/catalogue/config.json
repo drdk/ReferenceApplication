@@ -681,7 +681,7 @@
                     "desc": "https://dash.akamaized.net/akamai/bbb_30fps/bbb_with_multiple_tiled_thumbnails.mpd"
                 }, 
                 {
-                    "title": 2026 MSL5 TVA test",
+                    "title": 2060 MSL5 TVA noenc",
                     "url": "https://drevent01dash.akamaized.net/dash/live/2014200/tva_msl5/manifest.mpd",
                     "img": "icons/icons_1x1_livestream.png",
                     "app": 6,
