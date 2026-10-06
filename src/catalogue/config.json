@@ -689,11 +689,11 @@
 		    "live": true
                 },
 		{
-                    "title": "2026 MSL5 TVA enc. test",
-                    "url": "https://drevent01dash.akamaized.net/dash/live/2014200/tva_msl5_encrypted/manifest.mpd",
+                    "title": "2026 MSL5 TVA enc. CENC test",
+                    "url": "https://drevent01dash.akamaized.net/dash/live/2014200/tva_msl5_encrypted/manifest.mpd?aka_dme_enc=cenc",
                     "img": "icons/icons_1x1_livestream.png",
                     "app": 6,
-                    "desc": "https://drevent01dash.akamaized.net/dash/live/2014200/tva_msl5_encrypted/manifest.mpd",
+                    "desc": "https://drevent01dash.akamaized.net/dash/live/2014200/tva_msl5_encrypted/manifest.mpd?aka_dme_enc=cenc",
 		    "live": true
                 },
 		{
